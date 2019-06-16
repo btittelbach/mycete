@@ -65,6 +65,7 @@ func Ustat(dev int, ubuf *Ustat_t) (err error) {
 	return ENOSYS
 }
 
+//sys	accept(s int, rsa *RawSockaddrAny, addrlen *_Socklen) (fd int, err error)
 //sys	accept4(s int, rsa *RawSockaddrAny, addrlen *_Socklen, flags int) (fd int, err error)
 //sys	bind(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
 //sys	connect(s int, addr unsafe.Pointer, addrlen _Socklen) (err error)
@@ -165,6 +166,18 @@ func Pause() error {
 	return err
 }
 
+func Poll(fds []PollFd, timeout int) (n int, err error) {
+	var ts *Timespec
+	if timeout >= 0 {
+		ts = new(Timespec)
+		*ts = NsecToTimespec(int64(timeout) * 1e6)
+	}
+	if len(fds) == 0 {
+		return ppoll(nil, 0, ts, nil)
+	}
+	return ppoll(&fds[0], len(fds), ts, nil)
+}
+
 func Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error) {
 	return Renameat2(olddirfd, oldpath, newdirfd, newpath, 0)
 }
@@ -181,3 +194,7 @@ func KexecFileLoad(kernelFd int, initrdFd int, cmdline string, flags int) error 
 	}
 	return kexecFileLoad(kernelFd, initrdFd, cmdlineLen, cmdline, flags)
 }
+
+// dup2 exists because func Dup3 in syscall_linux.go references
+// it in an unreachable path. dup2 isn't available on arm64.
+func dup2(oldfd int, newfd int) error
