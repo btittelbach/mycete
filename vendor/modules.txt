@@ -32,6 +32,9 @@ github.com/gorilla/css/scanner
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
+# github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
+## explicit
+github.com/kylemcc/twitter-text-go/extract
 # github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 ## explicit; go 1.12
 github.com/matrix-org/gomatrix
@@ -54,6 +57,8 @@ golang.org/x/net/html/atom
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+# gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
+## explicit
 # suah.dev/protect v1.2.0
 ## explicit; go 1.14
 suah.dev/protect
