@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/matrix-org/gomatrix"
+	"github.com/btittelbach/gomatrix"
 	mastodon "github.com/mattn/go-mastodon"
 )
 
