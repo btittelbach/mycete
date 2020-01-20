@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/ChimeraCoder/anaconda"
+	mastodon "github.com/btittelbach/go-mastodon"
 	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
-	mastodon "github.com/mattn/go-mastodon"
 )
 
 const character_limit_twitter_ int = 280
@@ -168,7 +168,7 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 	}
 	mastodon_ids := make([]mastodon.ID, len(imagepaths))
 	for idx, imagepath := range imagepaths {
-		if attachment, err := client.UploadMedia(context.Background(), imagepath); err != nil {
+		if attachment, err := client.UploadMedia(context.Background(), imagepath, ""); err != nil {
 			return nil, err
 		} else {
 			mastodon_ids[idx] = attachment.ID

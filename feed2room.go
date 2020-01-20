@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
+	mastodon "github.com/btittelbach/go-mastodon"
 	"github.com/btittelbach/gomatrix"
-	mastodon "github.com/mattn/go-mastodon"
 )
 
 //// Desired Abilities (e.g.)

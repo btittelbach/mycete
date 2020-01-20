@@ -6,8 +6,8 @@ import (
 
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/btittelbach/cachetable"
+	mastodon "github.com/btittelbach/go-mastodon"
 	"github.com/btittelbach/gomatrix"
-	mastodon "github.com/mattn/go-mastodon"
 )
 
 type FeedRoomConnector struct {

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	mastodon "github.com/mattn/go-mastodon"
+	mastodon "github.com/btittelbach/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
 )
 

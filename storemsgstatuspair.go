@@ -1,6 +1,6 @@
 package main
 
-import mastodon "github.com/mattn/go-mastodon"
+import mastodon "github.com/btittelbach/go-mastodon"
 
 type MsgStatusDataAction int
 
