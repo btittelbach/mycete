@@ -87,3 +87,17 @@ func (a TwitterApi) UploadVideoFinalize(mediaIdString string) (videoMedia VideoM
 	a.queryQueue <- query{UploadBaseUrl + "/media/upload.json", v, &mediaResponse, _POST, response_ch}
 	return mediaResponse, (<-response_ch).err
 }
+
+//// Add Image description or alternate text for accessibility purpouses
+//// implements https://blog.twitter.com/developer/en_us/a/2016/alt-text-support-for-twitter-cards-and-the-rest-api.html
+func (a TwitterApi) AddMediaMetadata(mediaIdString string, alt_text string) (err error) {
+	v := url.Values{}
+	v.Set("alt_text", alt_text)
+	v.Set("media_id", mediaIdString)
+
+	var emptyResponse interface{}
+
+	response_ch := make(chan response)
+	a.queryQueue <- query{UploadBaseUrl + "/media/metadata/create.json", v, &emptyResponse, _POST, response_ch}
+	return (<-response_ch).err
+}

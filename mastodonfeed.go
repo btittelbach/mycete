@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/ChimeraCoder/anaconda"
+	"github.com/btittelbach/anaconda"
 	"github.com/btittelbach/cachetable"
 	mastodon "github.com/mattn/go-mastodon"
 	"github.com/matrix-org/gomatrix"

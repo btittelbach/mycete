@@ -1,6 +1,5 @@
 # github.com/ChimeraCoder/anaconda v2.0.0+incompatible
 ## explicit
-github.com/ChimeraCoder/anaconda
 # github.com/ChimeraCoder/tokenbucket v0.0.0-20131201223612-c5a927568de7
 ## explicit
 github.com/ChimeraCoder/tokenbucket
@@ -11,6 +10,9 @@ github.com/aymerick/douceur/parser
 # github.com/azr/backoff v0.0.0-20160115115103-53511d3c7330
 ## explicit
 github.com/azr/backoff
+# github.com/btittelbach/anaconda v2.0.1-0.20200120203223-5807835808f7+incompatible
+## explicit
+github.com/btittelbach/anaconda
 # github.com/btittelbach/cachetable v0.9.1
 ## explicit; go 1.12
 github.com/btittelbach/cachetable

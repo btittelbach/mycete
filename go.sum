@@ -9,6 +9,8 @@ github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuP
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/azr/backoff v0.0.0-20160115115103-53511d3c7330 h1:ekDALXAVvY/Ub1UtNta3inKQwZ/jMB/zpOtD8rAYh78=
 github.com/azr/backoff v0.0.0-20160115115103-53511d3c7330/go.mod h1:nH+k0SvAt3HeiYyOlJpLLv1HG1p7KWP7qU9QPp2/pCo=
+github.com/btittelbach/anaconda v2.0.1-0.20200120203223-5807835808f7+incompatible h1:8mNrDY+WNEOdzwvHKqLcSoYe4POtnkkCKMQo4rArdow=
+github.com/btittelbach/anaconda v2.0.1-0.20200120203223-5807835808f7+incompatible/go.mod h1:JXs61Zy9WQFup47J+BL41G4GsE33h10JCnHIfxjIV44=
 github.com/btittelbach/cachetable v0.9.1 h1:19DvD1DM2swZldOkeXxbkqTZyBDyah/3SZ2/7Ys9+HQ=
 github.com/btittelbach/cachetable v0.9.1/go.mod h1:gCd8/Aw1VXag3b9e34phL/v06rV1U79tqZoVRZQsC9U=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
