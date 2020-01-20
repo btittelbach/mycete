@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ChimeraCoder/anaconda"
+	"github.com/btittelbach/anaconda"
 	mastodon "github.com/btittelbach/go-mastodon"
 	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
 )
@@ -111,6 +111,7 @@ func getImagesForTweet(client *anaconda.TwitterApi, nick string) ([]string, erro
 				return nil, err
 			} else {
 				media_ids[idx] = strconv.FormatInt(tmedia.MediaID, 10)
+				client.AddMediaMetadata(media_ids[idx], "") // add alt_text for image
 			}
 		}
 

@@ -1,9 +1,9 @@
 module github.com/qbit/mycete
 
 require (
-	github.com/ChimeraCoder/anaconda v2.0.0+incompatible
 	github.com/ChimeraCoder/tokenbucket v0.0.0-20131201223612-c5a927568de7 // indirect
 	github.com/azr/backoff v0.0.0-20160115115103-53511d3c7330 // indirect
+	github.com/btittelbach/anaconda v2.0.1-0.20200120203223-5807835808f7+incompatible
 	github.com/btittelbach/cachetable v0.9.1
 	github.com/btittelbach/go-mastodon v0.0.5-0.20200120193113-885f5ee53736
 	github.com/btittelbach/gomatrix v0.0.0-20190830190919-94d369014c5b
