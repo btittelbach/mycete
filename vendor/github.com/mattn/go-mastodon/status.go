@@ -1,11 +1,15 @@
 package mastodon
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -26,6 +30,7 @@ type Status struct {
 	FavouritesCount    int64        `json:"favourites_count"`
 	Reblogged          interface{}  `json:"reblogged"`
 	Favourited         interface{}  `json:"favourited"`
+	Bookmarked         interface{}  `json:"bookmarked"`
 	Muted              interface{}  `json:"muted"`
 	Sensitive          bool         `json:"sensitive"`
 	SpoilerText        string       `json:"spoiler_text"`
@@ -34,6 +39,7 @@ type Status struct {
 	Mentions           []Mention    `json:"mentions"`
 	Tags               []Tag        `json:"tags"`
 	Card               *Card        `json:"card"`
+	Poll               *Poll        `json:"poll"`
 	Application        Application  `json:"application"`
 	Language           string       `json:"language"`
 	Pinned             interface{}  `json:"pinned"`
@@ -61,10 +67,93 @@ type Card struct {
 	Height       int64  `json:"height"`
 }
 
+// Conversation hold information for mastodon conversation.
+type Conversation struct {
+	ID         ID         `json:"id"`
+	Accounts   []*Account `json:"accounts"`
+	Unread     bool       `json:"unread"`
+	LastStatus *Status    `json:"last_status"`
+}
+
+// Media is struct to hold media.
+type Media struct {
+	File        io.Reader
+	Thumbnail   io.Reader
+	Description string
+	Focus       string
+}
+
+func (m *Media) bodyAndContentType() (io.Reader, string, error) {
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+
+	fileName := "upload"
+	if f, ok := m.File.(*os.File); ok {
+		fileName = f.Name()
+	}
+	file, err := mw.CreateFormFile("file", fileName)
+	if err != nil {
+		return nil, "", err
+	}
+	if _, err := io.Copy(file, m.File); err != nil {
+		return nil, "", err
+	}
+
+	if m.Thumbnail != nil {
+		thumbName := "upload"
+		if f, ok := m.Thumbnail.(*os.File); ok {
+			thumbName = f.Name()
+		}
+		thumb, err := mw.CreateFormFile("thumbnail", thumbName)
+		if err != nil {
+			return nil, "", err
+		}
+		if _, err := io.Copy(thumb, m.Thumbnail); err != nil {
+			return nil, "", err
+		}
+	}
+
+	if m.Description != "" {
+		desc, err := mw.CreateFormField("description")
+		if err != nil {
+			return nil, "", err
+		}
+		if _, err := io.Copy(desc, strings.NewReader(m.Description)); err != nil {
+			return nil, "", err
+		}
+	}
+
+	if m.Focus != "" {
+		focus, err := mw.CreateFormField("focus")
+		if err != nil {
+			return nil, "", err
+		}
+		if _, err := io.Copy(focus, strings.NewReader(m.Focus)); err != nil {
+			return nil, "", err
+		}
+	}
+
+	if err := mw.Close(); err != nil {
+		return nil, "", err
+	}
+
+	return &buf, mw.FormDataContentType(), nil
+}
+
 // GetFavourites return the favorite list of the current user.
 func (c *Client) GetFavourites(ctx context.Context, pg *Pagination) ([]*Status, error) {
 	var statuses []*Status
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/favourites", nil, &statuses, pg)
+	if err != nil {
+		return nil, err
+	}
+	return statuses, nil
+}
+
+// GetBookmarks return the bookmark list of the current user.
+func (c *Client) GetBookmarks(ctx context.Context, pg *Pagination) ([]*Status, error) {
+	var statuses []*Status
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/bookmarks", nil, &statuses, pg)
 	if err != nil {
 		return nil, err
 	}
@@ -161,6 +250,26 @@ func (c *Client) Unfavourite(ctx context.Context, id ID) (*Status, error) {
 	return &status, nil
 }
 
+// Bookmark is bookmark the toot of id and return status of the bookmark toot.
+func (c *Client) Bookmark(ctx context.Context, id ID) (*Status, error) {
+	var status Status
+	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/statuses/%s/bookmark", id), nil, &status, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &status, nil
+}
+
+// Unbookmark is unbookmark the toot of id and return status of the unbookmark toot.
+func (c *Client) Unbookmark(ctx context.Context, id ID) (*Status, error) {
+	var status Status
+	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/statuses/%s/unbookmark", id), nil, &status, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &status, nil
+}
+
 // GetTimelineHome return statuses from home timeline.
 func (c *Client) GetTimelineHome(ctx context.Context, pg *Pagination) ([]*Status, error) {
 	var statuses []*Status
@@ -240,6 +349,19 @@ func (c *Client) PostStatus(ctx context.Context, toot *Toot) (*Status, error) {
 			params.Add("media_ids[]", string(media))
 		}
 	}
+	// Can't use Media and Poll at the same time.
+	if toot.Poll != nil && toot.Poll.Options != nil && toot.MediaIDs == nil {
+		for _, opt := range toot.Poll.Options {
+			params.Add("poll[options][]", string(opt))
+		}
+		params.Add("poll[expires_in]", fmt.Sprintf("%d", toot.Poll.ExpiresInSeconds))
+		if toot.Poll.Multiple {
+			params.Add("poll[multiple]", "true")
+		}
+		if toot.Poll.HideTotals {
+			params.Add("poll[hide_totals]", "true")
+		}
+	}
 	if toot.Visibility != "" {
 		params.Set("visibility", fmt.Sprint(toot.Visibility))
 	}
@@ -269,7 +391,7 @@ func (c *Client) Search(ctx context.Context, q string, resolve bool) (*Results, 
 	params.Set("q", q)
 	params.Set("resolve", fmt.Sprint(resolve))
 	var results Results
-	err := c.doAPI(ctx, http.MethodGet, "/api/v1/search", params, &results, nil)
+	err := c.doAPI(ctx, http.MethodGet, "/api/v2/search", params, &results, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -278,20 +400,67 @@ func (c *Client) Search(ctx context.Context, q string, resolve bool) (*Results, 
 
 // UploadMedia upload a media attachment from a file.
 func (c *Client) UploadMedia(ctx context.Context, file string) (*Attachment, error) {
-	var attachment Attachment
-	err := c.doAPI(ctx, http.MethodPost, "/api/v1/media", file, &attachment, nil)
+	f, err := os.Open(file)
 	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return c.UploadMediaFromMedia(ctx, &Media{File: f})
+}
+
+// UploadMediaFromReader uploads a media attachment from a io.Reader.
+func (c *Client) UploadMediaFromReader(ctx context.Context, reader io.Reader) (*Attachment, error) {
+	return c.UploadMediaFromMedia(ctx, &Media{File: reader})
+}
+
+// UploadMediaFromMedia uploads a media attachment from a Media struct.
+func (c *Client) UploadMediaFromMedia(ctx context.Context, media *Media) (*Attachment, error) {
+	var attachment Attachment
+	if err := c.doAPI(ctx, http.MethodPost, "/api/v1/media", media, &attachment, nil); err != nil {
 		return nil, err
 	}
 	return &attachment, nil
 }
 
-// UploadMediaFromReader uploads a media attachment from a io.Reader.
-func (c *Client) UploadMediaFromReader(ctx context.Context, reader io.Reader) (*Attachment, error) {
-	var attachment Attachment
-	err := c.doAPI(ctx, http.MethodPost, "/api/v1/media", reader, &attachment, nil)
+// GetTimelineDirect return statuses from direct timeline.
+func (c *Client) GetTimelineDirect(ctx context.Context, pg *Pagination) ([]*Status, error) {
+	params := url.Values{}
+
+	var conversations []*Conversation
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/conversations", params, &conversations, pg)
 	if err != nil {
 		return nil, err
 	}
-	return &attachment, nil
+
+	var statuses = []*Status{}
+
+	for _, c := range conversations {
+		s := c.LastStatus
+		statuses = append(statuses, s)
+	}
+
+	return statuses, nil
+}
+
+// GetConversations return direct conversations.
+func (c *Client) GetConversations(ctx context.Context, pg *Pagination) ([]*Conversation, error) {
+	params := url.Values{}
+
+	var conversations []*Conversation
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/conversations", params, &conversations, pg)
+	if err != nil {
+		return nil, err
+	}
+	return conversations, nil
+}
+
+// DeleteConversation delete the conversation specified by id.
+func (c *Client) DeleteConversation(ctx context.Context, id ID) error {
+	return c.doAPI(ctx, http.MethodDelete, fmt.Sprintf("/api/v1/conversations/%s", id), nil, nil, nil)
+}
+
+// MarkConversationAsRead mark the conversation as read.
+func (c *Client) MarkConversationAsRead(ctx context.Context, id ID) error {
+	return c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/conversations/%s/read", id), nil, nil, nil)
 }

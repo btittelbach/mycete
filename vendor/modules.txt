@@ -38,7 +38,7 @@ github.com/kylemcc/twitter-text-go/extract
 # github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 ## explicit; go 1.12
 github.com/matrix-org/gomatrix
-# github.com/mattn/go-mastodon v0.0.4
+# github.com/mattn/go-mastodon v0.0.5-0.20220503131638-87278bda2ea5
 ## explicit; go 1.12
 github.com/mattn/go-mastodon
 # github.com/microcosm-cc/bluemonday v1.0.18
@@ -48,12 +48,12 @@ github.com/microcosm-cc/bluemonday/css
 # github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 ## explicit
 github.com/tomnomnom/linkheader
-# golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+# golang.org/x/net v0.0.0-20211101193420-4a448f8816b3
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
-# golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
+# golang.org/x/sys v0.0.0-20211103235746-7861aae1554b
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/btittelbach/gomatrix"
 	mastodon "github.com/mattn/go-mastodon"
+	"github.com/matrix-org/gomatrix"
 )
 
 const (

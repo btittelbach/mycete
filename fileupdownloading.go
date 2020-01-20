@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/btittelbach/cachetable"
-	"github.com/btittelbach/gomatrix"
+	"github.com/matrix-org/gomatrix"
 )
 
 /// unfortunately, since neither go-twitter, anaconda or go-mastodon implement an io.Reader interface we have to use actual temporary files

@@ -7,10 +7,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"os"
 
 	"github.com/ChimeraCoder/anaconda"
-	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
 	mastodon "github.com/mattn/go-mastodon"
+	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
 )
 
 const character_limit_twitter_ int = 280
@@ -158,6 +159,16 @@ func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, 
 	return
 }
 
+func uploadMediaToMastodonWithDescription(client *mastodon.Client, ctx context.Context, file string, description string) (*mastodon.Attachment, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return client.UploadMediaFromMedia(ctx, &mastodon.Media{File: f, Description: description})
+}
+
 func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID, error) {
 	imagepaths, err := getUserFileList(matrixnick)
 	if err != nil {
@@ -168,7 +179,7 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 	}
 	mastodon_ids := make([]mastodon.ID, len(imagepaths))
 	for idx, imagepath := range imagepaths {
-		if attachment, err := client.UploadMedia(context.Background(), imagepath); err != nil {
+		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, ""); err != nil {
 			return nil, err
 		} else {
 			mastodon_ids[idx] = attachment.ID
