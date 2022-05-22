@@ -143,7 +143,6 @@ Oauth via console pin. (TODO)
 
 ## TODO
 
-- [ ] create an interface for clients.
 - [X] TravisCI.
 - [X] Read the timelines back into the matrix room.
 - [X] favorite and reblog Mastodon status
@@ -162,3 +161,7 @@ Oauth via console pin. (TODO)
 - [ ] clean up matrixbot.go prefix parser code
 - [ ] find a way to boost/replyto/favourite remote Toots (requires translation of URL to local Mastodon instance's status ID). In the meantime we add a "reply using this" URL in the room
 - [ ] make showing images in Matrix rooms optional for each additional room
+- [ ] support image descriptions for increase reader-accessibility
+  - [x] support setting image descriptions on social media end
+  - [ ] save image description somewhere for posting step
+  - [ ] create user-interface in matrix channel to describe images. (e.g. `st>` after image upload and `st-1>` for last image, etc.)

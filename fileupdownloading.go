@@ -20,6 +20,7 @@ import (
 
 /// unfortunately, since neither go-twitter, anaconda or go-mastodon implement an io.Reader interface we have to use actual temporary files
 
+// check a size againt known limits, depending on which social media services are enabled
 func checkImageBytesizeLimit(size int64) error {
 	var max_image_bytes int64 = 10 * 1024 * 1024
 	if c["server"]["twitter"] == "true" && size > imgbytes_limit_twitter_ {
@@ -34,6 +35,7 @@ func checkImageBytesizeLimit(size int64) error {
 	return nil
 }
 
+// read a file into memory and return it's contents as base64 encoded string
 func readFileIntoBase64(filepath string) (string, error) {
 	contents, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -42,6 +44,12 @@ func readFileIntoBase64(filepath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(contents), nil
 }
 
+// return number of elements in a directory.
+// at most we read (feed2matrx_image_count_limit_ + 1) dirctory entries
+// and my thus return less than the true amount of files in the directory
+// but this is ok, since all calling functions only need to know
+// if the number exceeds (feed2matrx_image_count_limit_).
+// This way we can safely limit Readdir.
 func osGetLimitedNumElementsInDir(directory string) (int, error) {
 	f, err := os.Open(directory)
 	if err != nil {
@@ -55,6 +63,8 @@ func osGetLimitedNumElementsInDir(directory string) (int, error) {
 	return len(fileInfo), nil
 }
 
+// Return list of media files, currently uploaded and prepapred for posting, for a matrix-user
+// returns at most (feed2matrx_image_count_limit_) list entries
 func getUserFileList(nick string) ([]string, error) {
 	userdir := hashNickToUserDir(nick)
 	f, err := os.Open(userdir)
@@ -76,6 +86,8 @@ func getUserFileList(nick string) ([]string, error) {
 	return fullnames, nil
 }
 
+// takes an array of file paths and a maximum file age
+// returns two arrays of files, separated by wether their file-age is below or above the given argument
 func filterFilelistByFileAge(full_filepaths []string, timeout time.Duration) (still_within_timeout_filepaths []string, older_than_timeout_filepaths []string, err error) {
 	now := time.Now()
 	still_within_timeout_filepaths = make([]string, 0, len(full_filepaths))
@@ -95,6 +107,7 @@ func filterFilelistByFileAge(full_filepaths []string, timeout time.Duration) (st
 	return
 }
 
+
 func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error {
 	if !strings.Contains(matrixurl, "mxc://") {
 		return fmt.Errorf("image url not a matrix content mxc://..  uri")
@@ -104,11 +117,11 @@ func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error
 	os.MkdirAll(userdir, 0700)
 	imgtmpfilepath := imgfilepath + ".tmp"
 
-	/// limit number of files per user
 	numfiles, err := osGetLimitedNumElementsInDir(userdir)
 	if err != nil {
 		return err
 	}
+	/// limit number of files per user
 	if numfiles >= feed2matrx_image_count_limit_ {
 		return fmt.Errorf("Too many files stored. %d is the limit.", feed2matrx_image_count_limit_)
 	}
