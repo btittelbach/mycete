@@ -161,6 +161,7 @@ Oauth via console pin. (TODO)
 - [ ] clean up matrixbot.go prefix parser code
 - [ ] find a way to boost/replyto/favourite remote Toots (requires translation of URL to local Mastodon instance's status ID). In the meantime we add a "reply using this" URL in the room
 - [ ] make showing images in Matrix rooms optional for each additional room
+- [ ] reply to a Tweet/Toot DM/comment via Matrix reply-function
 - [ ] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
   - [ ] save image description somewhere for posting step
