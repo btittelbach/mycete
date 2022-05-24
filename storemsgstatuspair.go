@@ -5,9 +5,11 @@ import mastodon "github.com/mattn/go-mastodon"
 type MsgStatusDataAction int
 
 const (
-	actionPost   MsgStatusDataAction = iota
-	actionReblog MsgStatusDataAction = iota
-	actionFav    MsgStatusDataAction = iota
+	actionPost   	 MsgStatusDataAction = iota
+	actionReblog 	 MsgStatusDataAction = iota
+	actionFav    	 MsgStatusDataAction = iota
+	actionMedia  	 MsgStatusDataAction = iota
+	actionMediaDesc  MsgStatusDataAction = iota
 )
 
 type MsgStatusData struct {

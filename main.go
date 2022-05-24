@@ -53,6 +53,7 @@ func configSanityChecksAndDefaults() {
 		ConfigValueDescriptor{"matrix", "reblog_prefix", "reblog>"},
 		ConfigValueDescriptor{"matrix", "favourite_prefix", "+1>"},
 		ConfigValueDescriptor{"matrix", "help_prefix", "!help"},
+		ConfigValueDescriptor{"matrix", "mediadesc_prefix", "desc>"},
 	}
 
 	for _, cfgval := range must_be_unique_and_present_configvalues {

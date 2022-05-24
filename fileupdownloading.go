@@ -13,12 +13,17 @@ import (
 	"path"
 	"strings"
 	"time"
+	"sort"
+	"errors"
 
 	"github.com/btittelbach/cachetable"
 	"github.com/matrix-org/gomatrix"
 )
 
 /// unfortunately, since neither go-twitter, anaconda or go-mastodon implement an io.Reader interface we have to use actual temporary files
+
+const uploadfile_type_media_ = "media" //doesn't really need to contain
+const uploadfile_type_desc_ = "txt"
 
 // check a size againt known limits, depending on which social media services are enabled
 func checkImageBytesizeLimit(size int64) error {
@@ -66,8 +71,8 @@ func osGetLimitedNumElementsInDir(directory string) (int, error) {
 // Return list of media files, currently uploaded and prepapred for posting, for a matrix-user
 // returns at most (feed2matrx_image_count_limit_) list entries
 func getUserFileList(nick string) ([]string, error) {
-	userdir := hashNickToUserDir(nick)
-	f, err := os.Open(userdir)
+	usermediadir := path.Join(hashNickToUserDir(nick), uploadfile_type_media_)
+	f, err := os.Open(usermediadir)
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -81,7 +86,7 @@ func getUserFileList(nick string) ([]string, error) {
 	}
 	fullnames := make([]string, len(names))
 	for idx, filename := range names {
-		fullnames[idx] = path.Join(userdir, filename)
+		fullnames[idx] = path.Join(usermediadir, filename)
 	}
 	return fullnames, nil
 }
@@ -107,17 +112,36 @@ func filterFilelistByFileAge(full_filepaths []string, timeout time.Duration) (st
 	return
 }
 
+// takes an array of file paths and returns them sorted by age, youngest first
+func getUserFilelistSortedByMtime(nick, filetype string) (sorted_filepaths []string, err error) {
+	usermediadir := path.Join(hashNickToUserDir(nick), filetype)
+	var files []os.FileInfo
+	files, err = ioutil.ReadDir(usermediadir)
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(files, func(i,j int) bool{
+	    return files[i].ModTime().After(files[j].ModTime())
+	})
+
+	for _, onepath := range files {
+		sorted_filepaths = append(sorted_filepaths, path.Join(usermediadir, onepath.Name()))
+	}
+
+	return sorted_filepaths, nil
+}
+
 
 func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error {
 	if !strings.Contains(matrixurl, "mxc://") {
 		return fmt.Errorf("image url not a matrix content mxc://..  uri")
 	}
 	matrixmediaurlpart := strings.Split(matrixurl, "mxc://")[1]
-	userdir, imgfilepath := hashNickAndEventIdToPath(nick, eventid)
-	os.MkdirAll(userdir, 0700)
+	filesdir, imgfilepath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_media_, eventid)
+	os.MkdirAll(filesdir, 0700)
 	imgtmpfilepath := imgfilepath + ".tmp"
 
-	numfiles, err := osGetLimitedNumElementsInDir(userdir)
+	numfiles, err := osGetLimitedNumElementsInDir(filesdir)
 	if err != nil {
 		return err
 	}
@@ -131,6 +155,7 @@ func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error
 	if err != nil {
 		return err
 	}
+
 	defer fh.Close()
 
 	/// Download image
@@ -163,13 +188,95 @@ func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error
 		return err
 	}
 
+	//NOTE: FIXME: close has not been called, at atomic rename time, file may not have been fully written. This is mostly fine, since fh can still be written too since only filename changed, but if we were to interact with other processes, which we don't, this would be a race condition
 	os.Rename(imgtmpfilepath, imgfilepath)
+	return nil
+}
+
+func saveMediaFileDescription(nick, eventid_of_related_img, description string) error {
+	_, imgfilepath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_media_, eventid_of_related_img)
+
+	if _, err := os.Stat(imgfilepath); errors.Is(err, os.ErrNotExist) {
+	  return fmt.Errorf("corresponding media file does not exist")
+	}
+
+	filesdir, descfilepath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_desc_, eventid_of_related_img)
+	os.MkdirAll(filesdir, 0700)
+	desctmpfilepath := descfilepath + ".tmp"
+
+	numfiles, err := osGetLimitedNumElementsInDir(filesdir)
+	if err != nil {
+		return err
+	}
+	/// limit number of files per user
+	if numfiles >= feed2matrx_image_count_limit_ {
+		return fmt.Errorf("Too many files stored. %d is the limit.", feed2matrx_image_count_limit_)
+	}
+
+	/// Create the file (implies truncate)
+	fh, err := os.OpenFile(desctmpfilepath, os.O_WRONLY|os.O_CREATE, 0400)
+	if err != nil {
+		return err
+	}
+
+	/// Save description
+	fh.Write([]byte(description))
+	fh.Close()
+
+	os.Rename(desctmpfilepath, descfilepath)
+	return nil
+}
+
+func getDescriptionFilenameOfMediaFilename(imgfilepath string) (string, error) {
+	usermediadir, filename := path.Split(imgfilepath)
+	userdir, mediatype := path.Split(usermediadir)
+	if mediatype != uploadfile_type_media_ {
+		return "", fmt.Errorf("unknown imgfilepath given")
+	}
+	descfile := path.Join(userdir, uploadfile_type_desc_, filename)
+	return descfile, nil
+}
+
+func readDescriptionOfMediaFile(imgfilepath string) (string, error) {
+	descfile, err := getDescriptionFilenameOfMediaFilename(imgfilepath)
+	if err != nil {
+		return "", err
+	}
+	desc, err := os.ReadFile(descfile)
+	if err != nil {
+		return "", err
+	} else {
+		return string(desc), nil
+	}
+}
+
+func addMediaFileDescriptionToLastMediaUpload(nick, description string) error {
+	sorted_media, err := getUserFilelistSortedByMtime(nick, uploadfile_type_media_)
+	if err != nil {
+		log.Println("Error getUserFilelistSortedByMtime:", err)
+	}
+	if len(sorted_media) == 0 {
+		return fmt.Errorf("no media files have been uploaded")
+	}
+	descfile, err := getDescriptionFilenameOfMediaFilename(sorted_media[0])
+
+	/// Create the file (implies truncate)
+	fh, err := os.OpenFile(descfile, os.O_WRONLY|os.O_CREATE, 0400)
+	if err != nil {
+		return err
+	}
+
+	/// Save description
+	fh.Write([]byte(description))
+	fh.Close()
 	return nil
 }
 
 func rmFile(nick, eventid string) error {
 	// log.Println("removing file for", nick)
-	_, fpath := hashNickAndEventIdToPath(nick, eventid)
+	_, fpath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_desc_, eventid)
+	os.Remove(fpath)
+	_, fpath = hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_media_, eventid)
 	return os.Remove(fpath)
 }
 
@@ -186,12 +293,13 @@ func hashNickToUserDir(matrixnick string) string {
 	return path.Join(temp_image_files_dir_, hex.EncodeToString(shasum))
 }
 
-func hashNickAndEventIdToPath(matrixnick, eventid string) (string, string) {
+func hashNickAndTypeAndEventIdToPath(matrixnick, filetype, eventid string) (string, string) {
 	shasum := make([]byte, sha256.Size)
 	shasum32 := sha256.Sum256([]byte(eventid))
 	copy(shasum[0:sha256.Size], shasum32[0:sha256.Size])
 	userdir := hashNickToUserDir(matrixnick)
-	return userdir, path.Join(userdir, hex.EncodeToString(shasum))
+	filetypedir := path.Join(userdir, filetype)
+	return filetypedir, path.Join(filetypedir, hex.EncodeToString(shasum))
 }
 
 type MxUploadedImageInfo struct {

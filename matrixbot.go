@@ -136,6 +136,52 @@ func runMatrixPublishBot() {
 			case "m.text":
 				if post, ok := ev.Body(); ok {
 					log.Printf("Message: '%s'", post)
+
+					if rel_to_i, rel_to_inmap := ev.Content["m.relates_to"]; rel_to_inmap {
+						if in_reply_to, in_reply_to_inmap := rel_to_i.(map[string]interface{})["m.in_reply_to"]; in_reply_to_inmap {
+							if reply_to_event_id_i, reply_to_event_id_inmap := in_reply_to.(map[string]interface{})["event_id"]; reply_to_event_id_inmap {
+
+								go func() {
+									// check the type of message the reply-to event_id was
+									reply_to_event_id := reply_to_event_id_i.(string)
+									futuremsg := make(chan *MsgStatusData)
+									rums_retrieve_chan <- RUMSRetrieveMsg{key: reply_to_event_id, future: futuremsg}
+									reply_to_msg_data := <- futuremsg
+									if nil != reply_to_msg_data {
+										if ev.Sender != reply_to_msg_data.MatrixUser {
+											log.Println("Reply to Message: User", ev.Sender, "is not", reply_to_msg_data.MatrixUser)
+											return										
+										}
+
+										//our action depend on what kind of event that was
+										switch reply_to_msg_data.Action {
+											case actionPost:
+												// do nothing in case of our own post
+											case actionReblog:
+												// do nothing if we reblogged
+											case actionFav:
+												// do nothing if we fav'ed
+											case actionMedia:
+												// add description to media
+												err = saveMediaFileDescription(ev.Sender, reply_to_event_id, strings.TrimSpace(post))
+												if err != nil {
+													errmsg := fmt.Sprintf("Error saving description: %s", err)
+													mxNotify(mxcli, "imgdesc", ev.Sender, errmsg)
+													log.Println(errmsg)
+												} else {
+													mxNotify(mxcli, "imgdesc", ev.Sender, fmt.Sprintf("I attached your description to the image"))	
+												}
+											case actionMediaDesc:
+												//do nothing
+											default:
+												//do nothing
+										}
+									}
+								}()
+							}
+						}
+					}
+
 					if strings.HasPrefix(post, c["matrix"]["reblog_prefix"]) {
 						/// CMD Reblogging
 
@@ -354,6 +400,35 @@ func runMatrixPublishBot() {
 
 						}()
 
+
+					// } else if strings.HasPrefix(post, c["matrix"]["mediadesc_prefix"]) {
+					// 	/// CMD Posting
+
+					// 	post = strings.TrimSpace(post[len(c["matrix"]["mediadesc_prefix"]):])
+
+					// 	if c.GetValueDefault("images", "enabled", "false") != "true" {
+					// 		mxNotify(mxcli, "error", ev.Sender, "image support is disabled. Set [images]enabled=true")
+					// 		return							
+					// 	}
+
+					// 	if err = checkCharacterLimit(post); err != nil {
+					// 		log.Println(err)
+					// 		mxNotify(mxcli, "limitcheck", ev.Sender, fmt.Sprintf("Media description too long! %s", err.Error()))
+					// 		return
+					// 	}
+
+					// 	go func() {
+					// 		lock := getPerUserLock(ev.Sender)
+					// 		lock.Lock()
+					// 		defer lock.Unlock()
+					// 		var reviewurl string
+					// 		var twitterid int64
+					// 		var mastodonid mastodon.ID
+
+					// 		//// TODO: add description to last queued image
+					//		//// use func addMediaFileDescriptionToLastMediaUpload(nick, description string) error
+					// 	}()
+
 					} else if strings.HasPrefix(post, c["matrix"]["help_prefix"]) {
 						/// CMD Help
 
@@ -397,6 +472,9 @@ func runMatrixPublishBot() {
 								fmt.Println("ERROR downloading image:", err)
 								return
 							}
+							// save event id of saved image, so we know where to attach description in case of reply
+							rums_store_chan <- RUMSStoreMsg{key: ev.ID, data: MsgStatusData{MatrixUser: ev.Sender, Action: actionMedia}}
+							// notify user
 							mxNotify(mxcli, "imagesaver", ev.Sender, fmt.Sprintf("image saved. Will tweet/toot with %s's next message", ev.Sender))
 						}()
 					}
