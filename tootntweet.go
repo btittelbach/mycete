@@ -180,7 +180,8 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 	}
 	mastodon_ids := make([]mastodon.ID, len(imagepaths))
 	for idx, imagepath := range imagepaths {
-		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, ""); err != nil {
+		imagedesc, _ := readDescriptionOfMediaFile(imagepath)
+		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, imagedesc); err != nil {
 			return nil, err
 		} else {
 			mastodon_ids[idx] = attachment.ID
