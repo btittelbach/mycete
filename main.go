@@ -78,7 +78,6 @@ func configSanityChecksAndDefaults() {
 			}
 		}
 	}
-
 }
 
 func mainWithDefers() {
