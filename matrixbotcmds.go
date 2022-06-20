@@ -88,6 +88,11 @@ func parseReblogFavouriteArgs(prefix, line string, mxcli *gomatrix.Client, mcmd 
 		return fmt.Errorf("Please say " + prefix + " followed by 'last', <status URL> or 'toot'/'tweet' <ID>")
 	}
 }
+
+/// TODO
+/// TODO Turn BotCmd's into methods of a struct with interface
+/// TODO
+
 func BotCmdReblog(mclient *mastodon.Client, tclient *anaconda.TwitterApi, rums_store_chan chan<- RUMSStoreMsg, rums_retrieve_chan chan<- RUMSRetrieveMsg, mxcli *gomatrix.Client, ev *gomatrix.Event, post string) {
 
 	if err := parseReblogFavouriteArgs(c["matrix"]["reblog_prefix"], post, mxcli,

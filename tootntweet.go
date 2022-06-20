@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"os"
+	"log"
 
 	"github.com/btittelbach/anaconda"
 	mastodon "github.com/mattn/go-mastodon"
@@ -180,7 +181,10 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 	}
 	mastodon_ids := make([]mastodon.ID, len(imagepaths))
 	for idx, imagepath := range imagepaths {
-		imagedesc, _ := readDescriptionOfMediaFile(imagepath)
+		imagedesc, imgdescerr := readDescriptionOfMediaFile(imagepath)
+		if imgdescerr != nil {
+			log.Println("readDescriptionOfMediaFile Error:",imgdescerr)
+		}
 		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, imagedesc); err != nil {
 			return nil, err
 		} else {
