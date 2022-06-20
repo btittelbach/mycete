@@ -84,6 +84,8 @@ func runMatrixPublishBot() {
 						if in_reply_to, in_reply_to_inmap := rel_to_i.(map[string]interface{})["m.in_reply_to"]; in_reply_to_inmap {
 							if reply_to_event_id_i, reply_to_event_id_inmap := in_reply_to.(map[string]interface{})["event_id"]; reply_to_event_id_inmap {
 
+								post = RemoveQuoteTextFromMatrixElementReplyMsg(post)
+
 								go func() {
 									// check the type of message the reply-to event_id was
 									reply_to_event_id := reply_to_event_id_i.(string)

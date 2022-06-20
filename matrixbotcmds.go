@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"bufio"
 
 	mastodon "github.com/mattn/go-mastodon"
 	"github.com/matrix-org/gomatrix"
@@ -25,6 +26,25 @@ func mxNotify(mxcli *gomatrix.Client, from, to, msg string) {
 	}
 }
 
+func RemoveQuoteTextFromMatrixElementReplyMsg(inputbody string) (outputbody string) {
+	scanner := bufio.NewScanner(strings.NewReader(inputbody))
+	scanner.Split(bufio.ScanLines)
+	lines_still_quoted_since_beginning_of_multiline_string := true
+	for scanner.Scan() {
+		line := scanner.Text()
+		//find first not quoted line
+		if !( strings.HasPrefix(line,"> ") || len(strings.TrimSpace(line)) == 0) {
+			lines_still_quoted_since_beginning_of_multiline_string = false
+		}
+		//verbatim copy lines to output after quotes ended
+		if !lines_still_quoted_since_beginning_of_multiline_string {
+			if len(outputbody) > 0 { outputbody += "\n" }
+			outputbody += line
+		}
+	}
+	//ignore errors
+	return
+}
 
 //TODO: accept strings in form:
 // ✓ url (where we can detect twitter or mastodon)
