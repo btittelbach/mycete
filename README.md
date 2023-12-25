@@ -187,7 +187,6 @@ Oauth via console pin. (TODO)
 - [ ] reply to a Tweet/Toot DM/comment via Matrix reply-function
 - [ ] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
-    - [ ] find out why it does not work
   - [x] save image description somewhere for posting step
   - [x] create first user-interface in matrix channel to describe images. (e.g. reply to an img with desc)
   - [ ] create second user-interface in matrix channel to describe images. (e.g. `st>` after image upload and `st-1>` for last image, etc.)
