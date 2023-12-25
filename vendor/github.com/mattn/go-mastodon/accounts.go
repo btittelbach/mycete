@@ -9,27 +9,29 @@ import (
 	"time"
 )
 
-// Account hold information for mastodon account.
+// Account holds information for a mastodon account.
 type Account struct {
-	ID             ID        `json:"id"`
-	Username       string    `json:"username"`
-	Acct           string    `json:"acct"`
-	DisplayName    string    `json:"display_name"`
-	Locked         bool      `json:"locked"`
-	CreatedAt      time.Time `json:"created_at"`
-	FollowersCount int64     `json:"followers_count"`
-	FollowingCount int64     `json:"following_count"`
-	StatusesCount  int64     `json:"statuses_count"`
-	Note           string    `json:"note"`
-	URL            string    `json:"url"`
-	Avatar         string    `json:"avatar"`
-	AvatarStatic   string    `json:"avatar_static"`
-	Header         string    `json:"header"`
-	HeaderStatic   string    `json:"header_static"`
-	Emojis         []Emoji   `json:"emojis"`
-	Moved          *Account  `json:"moved"`
-	Fields         []Field   `json:"fields"`
-	Bot            bool      `json:"bot"`
+	ID             ID             `json:"id"`
+	Username       string         `json:"username"`
+	Acct           string         `json:"acct"`
+	DisplayName    string         `json:"display_name"`
+	Locked         bool           `json:"locked"`
+	CreatedAt      time.Time      `json:"created_at"`
+	FollowersCount int64          `json:"followers_count"`
+	FollowingCount int64          `json:"following_count"`
+	StatusesCount  int64          `json:"statuses_count"`
+	Note           string         `json:"note"`
+	URL            string         `json:"url"`
+	Avatar         string         `json:"avatar"`
+	AvatarStatic   string         `json:"avatar_static"`
+	Header         string         `json:"header"`
+	HeaderStatic   string         `json:"header_static"`
+	Emojis         []Emoji        `json:"emojis"`
+	Moved          *Account       `json:"moved"`
+	Fields         []Field        `json:"fields"`
+	Bot            bool           `json:"bot"`
+	Discoverable   bool           `json:"discoverable"`
+	Source         *AccountSource `json:"source"`
 }
 
 // Field is a Mastodon account profile field.
@@ -58,7 +60,7 @@ func (c *Client) GetAccount(ctx context.Context, id ID) (*Account, error) {
 	return &account, nil
 }
 
-// GetAccountCurrentUser return Account of current user.
+// GetAccountCurrentUser returns the Account of current user.
 func (c *Client) GetAccountCurrentUser(ctx context.Context) (*Account, error) {
 	var account Account
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/accounts/verify_credentials", nil, &account, nil)
@@ -127,7 +129,7 @@ func (c *Client) AccountUpdate(ctx context.Context, profile *Profile) (*Account,
 	return &account, nil
 }
 
-// GetAccountStatuses return statuses by specified accuont.
+// GetAccountStatuses return statuses by specified account.
 func (c *Client) GetAccountStatuses(ctx context.Context, id ID, pg *Pagination) ([]*Status, error) {
 	var statuses []*Status
 	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/statuses", url.PathEscape(string(id))), nil, &statuses, pg)
@@ -137,7 +139,19 @@ func (c *Client) GetAccountStatuses(ctx context.Context, id ID, pg *Pagination) 
 	return statuses, nil
 }
 
-// GetAccountFollowers return followers list.
+// GetAccountPinnedStatuses returns statuses pinned by specified accuont.
+func (c *Client) GetAccountPinnedStatuses(ctx context.Context, id ID) ([]*Status, error) {
+	var statuses []*Status
+	params := url.Values{}
+	params.Set("pinned", "true")
+	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/statuses", url.PathEscape(string(id))), params, &statuses, nil)
+	if err != nil {
+		return nil, err
+	}
+	return statuses, nil
+}
+
+// GetAccountFollowers returns followers list.
 func (c *Client) GetAccountFollowers(ctx context.Context, id ID, pg *Pagination) ([]*Account, error) {
 	var accounts []*Account
 	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/followers", url.PathEscape(string(id))), nil, &accounts, pg)
@@ -147,7 +161,7 @@ func (c *Client) GetAccountFollowers(ctx context.Context, id ID, pg *Pagination)
 	return accounts, nil
 }
 
-// GetAccountFollowing return following list.
+// GetAccountFollowing returns following list.
 func (c *Client) GetAccountFollowing(ctx context.Context, id ID, pg *Pagination) ([]*Account, error) {
 	var accounts []*Account
 	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/following", url.PathEscape(string(id))), nil, &accounts, pg)
@@ -157,7 +171,7 @@ func (c *Client) GetAccountFollowing(ctx context.Context, id ID, pg *Pagination)
 	return accounts, nil
 }
 
-// GetBlocks return block list.
+// GetBlocks returns block list.
 func (c *Client) GetBlocks(ctx context.Context, pg *Pagination) ([]*Account, error) {
 	var accounts []*Account
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/blocks", nil, &accounts, pg)
@@ -167,7 +181,7 @@ func (c *Client) GetBlocks(ctx context.Context, pg *Pagination) ([]*Account, err
 	return accounts, nil
 }
 
-// Relationship hold information for relation-ship to the account.
+// Relationship holds information for relationship to the account.
 type Relationship struct {
 	ID                  ID   `json:"id"`
 	Following           bool `json:"following"`
@@ -181,7 +195,7 @@ type Relationship struct {
 	Endorsed            bool `json:"endorsed"`
 }
 
-// AccountFollow follow the account.
+// AccountFollow follows the account.
 func (c *Client) AccountFollow(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/follow", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -191,7 +205,7 @@ func (c *Client) AccountFollow(ctx context.Context, id ID) (*Relationship, error
 	return &relationship, nil
 }
 
-// AccountUnfollow unfollow the account.
+// AccountUnfollow unfollows the account.
 func (c *Client) AccountUnfollow(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/unfollow", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -201,7 +215,7 @@ func (c *Client) AccountUnfollow(ctx context.Context, id ID) (*Relationship, err
 	return &relationship, nil
 }
 
-// AccountBlock block the account.
+// AccountBlock blocks the account.
 func (c *Client) AccountBlock(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/block", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -211,7 +225,7 @@ func (c *Client) AccountBlock(ctx context.Context, id ID) (*Relationship, error)
 	return &relationship, nil
 }
 
-// AccountUnblock unblock the account.
+// AccountUnblock unblocks the account.
 func (c *Client) AccountUnblock(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/unblock", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -221,7 +235,7 @@ func (c *Client) AccountUnblock(ctx context.Context, id ID) (*Relationship, erro
 	return &relationship, nil
 }
 
-// AccountMute mute the account.
+// AccountMute mutes the account.
 func (c *Client) AccountMute(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/mute", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -231,7 +245,7 @@ func (c *Client) AccountMute(ctx context.Context, id ID) (*Relationship, error) 
 	return &relationship, nil
 }
 
-// AccountUnmute unmute the account.
+// AccountUnmute unmutes the account.
 func (c *Client) AccountUnmute(ctx context.Context, id ID) (*Relationship, error) {
 	var relationship Relationship
 	err := c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/accounts/%s/unmute", url.PathEscape(string(id))), nil, &relationship, nil)
@@ -241,7 +255,7 @@ func (c *Client) AccountUnmute(ctx context.Context, id ID) (*Relationship, error
 	return &relationship, nil
 }
 
-// GetAccountRelationships return relationship for the account.
+// GetAccountRelationships returns relationship for the account.
 func (c *Client) GetAccountRelationships(ctx context.Context, ids []string) ([]*Relationship, error) {
 	params := url.Values{}
 	for _, id := range ids {
@@ -256,7 +270,7 @@ func (c *Client) GetAccountRelationships(ctx context.Context, ids []string) ([]*
 	return relationships, nil
 }
 
-// AccountsSearch search accounts by query.
+// AccountsSearch searches accounts by query.
 func (c *Client) AccountsSearch(ctx context.Context, q string, limit int64) ([]*Account, error) {
 	params := url.Values{}
 	params.Set("q", q)
@@ -270,7 +284,7 @@ func (c *Client) AccountsSearch(ctx context.Context, q string, limit int64) ([]*
 	return accounts, nil
 }
 
-// FollowRemoteUser send follow-request.
+// FollowRemoteUser sends follow-request.
 func (c *Client) FollowRemoteUser(ctx context.Context, uri string) (*Account, error) {
 	params := url.Values{}
 	params.Set("uri", uri)
@@ -283,7 +297,7 @@ func (c *Client) FollowRemoteUser(ctx context.Context, uri string) (*Account, er
 	return &account, nil
 }
 
-// GetFollowRequests return follow-requests.
+// GetFollowRequests returns follow requests.
 func (c *Client) GetFollowRequests(ctx context.Context, pg *Pagination) ([]*Account, error) {
 	var accounts []*Account
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/follow_requests", nil, &accounts, pg)
@@ -293,12 +307,12 @@ func (c *Client) GetFollowRequests(ctx context.Context, pg *Pagination) ([]*Acco
 	return accounts, nil
 }
 
-// FollowRequestAuthorize is authorize the follow request of user with id.
+// FollowRequestAuthorize authorizes the follow request of user with id.
 func (c *Client) FollowRequestAuthorize(ctx context.Context, id ID) error {
 	return c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/follow_requests/%s/authorize", url.PathEscape(string(id))), nil, nil, nil)
 }
 
-// FollowRequestReject is rejects the follow request of user with id.
+// FollowRequestReject rejects the follow request of user with id.
 func (c *Client) FollowRequestReject(ctx context.Context, id ID) error {
 	return c.doAPI(ctx, http.MethodPost, fmt.Sprintf("/api/v1/follow_requests/%s/reject", url.PathEscape(string(id))), nil, nil, nil)
 }
