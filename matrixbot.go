@@ -29,6 +29,31 @@ func init() {
 	directmsg_re_ = regexp.MustCompile(`(?:^|\s)(@\w+(?:@[a-zA-Z0-9.]+)?)(?:\W|$)`)
 }
 
+func getMapDeepValue(m map[string]any, keys ...string) any {
+	var v any
+	var keyexists bool
+	v = m
+	for _, k := range keys {
+		if vmap, conversionok := v.(map[string]any); conversionok {
+			if v, keyexists = vmap[k]; !keyexists {
+				return nil
+			}
+		} else {
+			return nil
+		}
+	}
+	return v
+}
+
+func getMapDeepString(m map[string]any, keys ...string) (rs string, conversionok bool) {
+	rv := getMapDeepValue(m, keys...)
+	if nil == rv {
+		return
+	}
+	rs, conversionok = rv.(string)
+	return
+}
+
 // Ignore messages from ourselves
 // Ignore messages from rooms we are not interessted in
 func mxIgnoreEvent(ev *gomatrix.Event) bool {
@@ -369,6 +394,9 @@ func runMatrixPublishBot() {
 			}
 
 			if membership, inmap := ev.Content["membership"]; inmap && membership == "join" {
+				if v, found := getMapDeepString(ev.Unsigned, "prev_content","membership"); found && v == "join" {
+					return //ignore things like name-change event in case user had already joined before
+				}
 				mxNotify(mxcli, "welcomer", ev.Sender, c["matrix"]["join_welcome_text"])
 			}
 		})
