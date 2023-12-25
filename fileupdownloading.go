@@ -228,8 +228,9 @@ func saveMediaFileDescription(nick, eventid_of_related_img, description string) 
 }
 
 func getDescriptionFilenameOfMediaFilename(imgfilepath string) (string, error) {
-	usermediadir, filename := path.Split(imgfilepath)
-	userdir, mediatype := path.Split(usermediadir)
+	filename := path.Base(imgfilepath)
+	usermediadir := path.Dir(imgfilepath) //Dir() returns directory without trailing '/'. Important for Split in next statement
+	userdir, mediatype := path.Split(usermediadir) //split returns ("dir1/dir2/","dir3"). Using multiple Split's to segment a path is a bad idea.
 	if mediatype != uploadfile_type_media_ {
 		return "", fmt.Errorf("unknown imgfilepath given")
 	}

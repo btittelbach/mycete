@@ -29,6 +29,7 @@ func init() {
 	directmsg_re_ = regexp.MustCompile(`(?:^|\s)(@\w+(?:@[a-zA-Z0-9.]+)?)(?:\W|$)`)
 }
 
+// traverse tree of map[string]map[string]... to depth len(keys) and return element if it exists
 func getMapDeepValue(m map[string]any, keys ...string) any {
 	var v any
 	var keyexists bool
@@ -45,6 +46,7 @@ func getMapDeepValue(m map[string]any, keys ...string) any {
 	return v
 }
 
+// traverse tree of map[string]map[string]... to depth len(keys) and return string if it exists and is a string
 func getMapDeepString(m map[string]any, keys ...string) (rs string, conversionok bool) {
 	rv := getMapDeepValue(m, keys...)
 	if nil == rv {

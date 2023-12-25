@@ -183,7 +183,7 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 	for idx, imagepath := range imagepaths {
 		imagedesc, imgdescerr := readDescriptionOfMediaFile(imagepath)
 		if imgdescerr != nil {
-			log.Println("readDescriptionOfMediaFile Error:",imgdescerr)
+			log.Println("readDescriptionOfMediaFile Error:", imgdescerr)
 		}
 		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, imagedesc); err != nil {
 			return nil, err

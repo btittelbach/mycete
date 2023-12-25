@@ -169,3 +169,5 @@ Oauth via console pin. (TODO)
   - [x] save image description somewhere for posting step
   - [x] create first user-interface in matrix channel to describe images. (e.g. reply to an img with desc)
   - [ ] create second user-interface in matrix channel to describe images. (e.g. `st>` after image upload and `st-1>` for last image, etc.)
+- [ ] remove Twitter (X) support, as third-party clients are obviously not welcome any more.
+- [ ] move to better config file parser
