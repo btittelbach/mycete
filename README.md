@@ -47,6 +47,28 @@ In addition to the home stream, it is possible to subscribe tag streams using `[
 
 If you don't need this, just leave `configurations` empty or remove all `feed2morerooms` sections.
 
+### Matrix xontrol room example conversation
+
+```
+t> Me, posting a fancy posting
+```
+
+```
+zwowos (@zwowos) favourited your status https://chaos.social/@example/202023902402824
+```
+
+```
+wowos(@wowos) mentioned you in public status https://cuties.social/@wowos/2020239028409>
+Hi, I liked your posting.
+
+
+( reply2> using https://chaos.social/web/statuses/2020239028409 )
+```
+
+```
+reply2> https://chaos.social/web/statuses/2020239028409 @wowos thanks!
+```
+
 ## Building
 
 ```
