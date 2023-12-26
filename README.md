@@ -171,9 +171,6 @@ Oauth via console pin. (TODO)
 - [X] favorite and reblog Mastodon status
 - [X] un-reblog and un-favourite when redacting matrix message
 - [ ] tests
-- [ ] Document the process for getting api keys.
-- [ ] Only establish our oauth / auth stuff when a service is enabled.
-- [ ] Post to RSS for blogging? (Mastodon already does rss out of the box)
 - [ ] Error early if our service is enabled and we have invalid credentials. (See if there is API for testing?)
 - [X] post images
 - [X] support uploading multiple images per Toot/Tweet
@@ -185,6 +182,7 @@ Oauth via console pin. (TODO)
 - [ ] find a way to boost/replyto/favourite remote Toots (requires translation of URL to local Mastodon instance's status ID). In the meantime we add a "reply using this" URL in the room
 - [ ] make showing images in Matrix rooms optional for each additional room
 - [ ] reply to a Tweet/Toot DM/comment via Matrix reply-function
+- [ ] edit a Toot via Matrix edit-message
 - [ ] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
   - [x] save image description somewhere for posting step
