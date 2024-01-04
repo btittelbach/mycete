@@ -183,6 +183,8 @@ Oauth via console pin. (TODO)
 - [ ] make showing images in Matrix rooms optional for each additional room
 - [ ] reply to a Tweet/Toot DM/comment via Matrix reply-function
 - [ ] edit a Toot via Matrix edit-message
+- [ ] add command to clear all user-uploaded images. Useful when bot warns about prepared images but they are so far back, you can't find them anymore.
+- [ ] have the bot reply to last image still in queue when bot warns about old images still in queue.
 - [ ] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
   - [x] save image description somewhere for posting step
