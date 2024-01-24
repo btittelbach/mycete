@@ -176,7 +176,7 @@ Oauth via console pin. (TODO)
 - [X] support uploading multiple images per Toot/Tweet
 - [X] more feedback and user error guards
 - [X] use constrained memory, not slowly ever growing maps. Aka don't be a memory hog
-- [ ] twitter stream to matrix, favorite and retweet (look at mautrix-twitter)
+- [ ] better support for non-local mastodon servers (display if someone from another server favorites a post in matrix channel, boost non-local posts, etc)
 - [ ] look into support for small videos
 - [ ] clean up matrixbot.go prefix parser code
 - [ ] find a way to boost/replyto/favourite remote Toots (requires translation of URL to local Mastodon instance's status ID). In the meantime we add a "reply using this" URL in the room
@@ -191,4 +191,5 @@ Oauth via console pin. (TODO)
   - [x] create first user-interface in matrix channel to describe images. (e.g. reply to an img with desc)
   - [ ] create second user-interface in matrix channel to describe images. (e.g. `st>` after image upload and `st-1>` for last image, etc.)
 - [ ] remove Twitter (X) support, as third-party clients are obviously not welcome any more.
+- [ ] look into what would be needed to add BlueSky
 - [ ] move to better config file parser
