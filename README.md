@@ -155,7 +155,7 @@ filter_unfollowed=true
 ## Creating a Matrix room
 
 1. create an account for the bot
-2. create a room with your personal account
+2. create an *unencrypted* room with your personal account
 3. put the room's address in the config file
 4. start the bot
 5. invite the bot into the room!
