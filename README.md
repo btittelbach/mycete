@@ -152,6 +152,18 @@ filter_unfollowed=true
 
 
 ```
+## Creating a Matrix room
+
+1. create an account for the bot
+2. create a room with your personal account
+3. put the room's address in the config file
+4. start the bot
+5. invite the bot into the room!
+
+
+
+Note that it should be possible to have the bot create the room, but for yet unknown reasons, this will lead to the matrix server not informing the bot about room messages. e.g. it wont't see what you type.
+
 
 ## Linking to Mastodon
 
