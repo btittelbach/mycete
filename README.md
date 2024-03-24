@@ -99,6 +99,9 @@ mediadesc_prefix=desc>
 help_prefix=!help
 join_welcome_text="Welcome! Warning: Everything you say I will toot and/or tweet to the world if it starts with t>"
 admins_can_redact_user_status=false
+image_timeout_minutes = 60
+image_timeout_warning = "Hey, more than 1 hour ago you added images that I'm now going to attach to your toot/tweet. Just letting you know. Delete them first if that is not what you want."
+
 
 [twitter]
 consumer_key=
@@ -123,8 +126,6 @@ show_complete_home_stream=false
 characterlimit = 1000
 imagebyteslimit = 4194304
 imagecountlimit = 4
-image_timeout_minutes = 60
-image_timeout_warning = "Hey, more than 1 hour ago you added images that I'm now going to attach to your toot/tweet. Just letting you know. Delete them first if that is not what you want."
 
 [feed2morerooms]
 subscribe_tagstreams=interesstingtag otherinteresstingtag

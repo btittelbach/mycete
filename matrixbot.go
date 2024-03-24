@@ -420,8 +420,8 @@ func runMatrixPublishBot() {
 						return
 					}
 					if len(user_filelist) > 0 {
-						warnmsg := c.GetValueDefault("feed2matrix", "image_timeout_warning", "Warning! There are old images ready to send. Better check before tweeting/tooting!")
-						_, outdated_filelist, err := filterFilelistByFileAge(user_filelist, feed2matrx_image_timeout_)
+						warnmsg := c.GetValueDefault("matrix", "image_timeout_warning", c.GetValueDefault("feed2matrix", "image_timeout_warning", "Warning! There are old images ready to send. Better check before tweeting/tooting!"))
+						_, outdated_filelist, err := filterFilelistByFileAge(user_filelist, matrix_image_timeout_)
 						if err != nil {
 							log.Println("Error filtering Filelist of ", userid, " by age due to: ", err)
 							return

@@ -15,14 +15,14 @@ import (
 	"suah.dev/protect"
 )
 
-/// Configuration Globals
+// / Configuration Globals
 var (
 	c                              goconfig.ConfigMap
 	temp_image_files_dir_          string
 	feed2matrx_image_bytes_limit_  int64
 	feed2matrx_image_count_limit_  int
 	matrix_notice_character_limit_ int = 1000
-	feed2matrx_image_timeout_      time.Duration
+	matrix_image_timeout_          time.Duration
 )
 
 type ConfigValueDescriptor struct {
@@ -136,10 +136,14 @@ func main() {
 	if feed2matrx_image_count_limit_, err = strconv.Atoi(c.GetValueDefault("feed2matrix", "imagecountlimit", "4")); err != nil {
 		panic(err)
 	}
-	if feed2matrx_image_timeout_mins, err := strconv.Atoi(c.GetValueDefault("feed2matrix", "image_timeout_minutes", "120")); err != nil {
-		panic(err)
+	if matrix_image_timeout_mins, err := strconv.Atoi(c.GetValueDefault("matrix", "image_timeout_minutes", "120")); err != nil {
+		if matrix_image_timeout_mins, err = strconv.Atoi(c.GetValueDefault("feed2matrix", "image_timeout_minutes", "120")); err != nil {
+			panic(err)
+		} else {
+			matrix_image_timeout_ = time.Minute * time.Duration(matrix_image_timeout_mins)
+		}
 	} else {
-		feed2matrx_image_timeout_ = time.Minute * time.Duration(feed2matrx_image_timeout_mins)
+		matrix_image_timeout_ = time.Minute * time.Duration(matrix_image_timeout_mins)
 	}
 
 	configSanityChecksAndDefaults()
