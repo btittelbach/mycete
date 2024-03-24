@@ -23,6 +23,8 @@ var (
 	feed2matrx_image_count_limit_  int
 	matrix_notice_character_limit_ int = 1000
 	matrix_image_timeout_          time.Duration
+	poststuffreminder_timeout_     time.Duration
+	poststuffreminder_msg_         string
 )
 
 type ConfigValueDescriptor struct {
@@ -145,8 +147,19 @@ func main() {
 	} else {
 		matrix_image_timeout_ = time.Minute * time.Duration(matrix_image_timeout_mins)
 	}
+	if feed2matrx_image_timeout_d, err := time.ParseDuration(c.GetValueDefault("matrix", "image_timeout_duration", "")); err == nil {
+		matrix_image_timeout_ = feed2matrx_image_timeout_d
+	}
 
 	configSanityChecksAndDefaults()
+
+	if poststuffreminder_timeout_str_ := c.GetValueDefault("matrix", "poststuffreminder_timeout", ""); len(poststuffreminder_timeout_str_) > 0 {
+		if poststuffreminder_timeout_, err = time.ParseDuration(poststuffreminder_timeout_str_); err != nil {
+			panic("ERROR: Could not parse duration from config value 'poststuffreminder_timeout'. Leave blank to disable.")
+		} else {
+			poststuffreminder_msg_ = c.GetValueDefault("matrix", "poststuffreminder_msg", "Hey, you wanted to be reminded to post something!")
+		}
+	}
 
 	////////////////////////////////////////////////////////////
 	//// run main Main where a defer will still be called before we exit

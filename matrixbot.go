@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"sync"
 
 	mastodon "github.com/mattn/go-mastodon"
 	"github.com/matrix-org/gomatrix"
@@ -21,6 +22,9 @@ var (
 	mastodon_status_uri_re_ *regexp.Regexp
 	twitter_status_uri_re_  *regexp.Regexp
 	directmsg_re_           *regexp.Regexp
+	last_status_posted_time_ time.Time
+	last_status_posted_lock_ sync.Mutex
+
 )
 
 func init() {
@@ -66,6 +70,26 @@ type mastodon_action_cmd func(string) error
 type twitter_action_cmd func(string) error
 
 
+func updateLastStatusPostedTime() {
+	last_status_posted_lock_.Lock()
+	last_status_posted_time_ = time.Now()
+	last_status_posted_lock_.Unlock()
+}
+
+func runMatrixBotTimeRelatedTasks(mxcli *gomatrix.Client) {
+	last_status_posted_lock_.Lock()
+	last_status_posted_time_check := last_status_posted_time_
+   	last_status_posted_lock_.Unlock()
+	if poststuffreminder_timeout_ > 0 && time.Now().Sub(last_status_posted_time_check) > poststuffreminder_timeout_ {
+ 		// sending the reminder count's as the user having posted something
+ 		// or rather, we send the reminders in the same intervall as the timeout
+ 		// in order not to be too anoying
+		updateLastStatusPostedTime()
+		// send reminder to post an update
+		mxNotify(mxcli, c["matrix"]["user"], "@room", poststuffreminder_msg_)
+	}
+}
+
 func runMatrixPublishBot() {
 	mxcli, _ := gomatrix.NewClient(c["matrix"]["url"], "", "")
 	resp, err := mxcli.Login(&gomatrix.ReqLogin{
@@ -94,6 +118,8 @@ func runMatrixPublishBot() {
 	if c.SectionInConfig("feed2matrix") {
 		markseen_c = taskWriteMastodonBackIntoMatrixRooms(mclient, mxcli)
 	}
+
+	updateLastStatusPostedTime() // start with login-time
 
 	syncer := mxcli.Syncer.(*gomatrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *gomatrix.Event) {
@@ -212,6 +238,7 @@ func runMatrixPublishBot() {
 						} else {
 							post = strings.TrimSpace(post[len(c["matrix"]["tootreply_prefix"]):])
 							private = false
+							updateLastStatusPostedTime() // public reply counts as posting
 						}
 
 						arglist := strings.SplitN(post, " ", 2)
@@ -274,6 +301,7 @@ func runMatrixPublishBot() {
 						}
 
 						go BotCmdBlogToWorld(mclient, tclient, rums_store_chan, rums_retrieve_chan, mxcli, ev, post, markseen_c)
+						updateLastStatusPostedTime()
 
 
 					// } else if strings.HasPrefix(post, c["matrix"]["mediadesc_prefix"]) {
@@ -441,6 +469,7 @@ func runMatrixPublishBot() {
 		if err := mxcli.Sync(); err != nil {
 			fmt.Println("Sync() returned ", err)
 		}
+		runMatrixBotTimeRelatedTasks(mxcli)
 		time.Sleep(100 * time.Second)
 	}
 }

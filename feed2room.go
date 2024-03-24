@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	mastodon "github.com/mattn/go-mastodon"
 	"github.com/matrix-org/gomatrix"
+	mastodon "github.com/mattn/go-mastodon"
 )
 
 //// Desired Abilities (e.g.)
@@ -193,10 +193,27 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 
 	no_duplicate_or_selfsent_status_c := make(chan *mastodon.Status, 42)
 	notification2myroom_c := make(chan *mastodon.Notification, 42)
+	update_last_status_posted_time_c := make(chan *mastodon.Status, 42)
 
 	//--> filter_duplicates_and_selfsent_c	--> filter_ownposts_duplicates_c
 	//										\-> no_duplicate_or_selfsent_status_c --> to controlling room
 	filter_duplicates_and_selfsent_c, markseen_c := frc.taskFilterDuplicateStatus("controlroom", no_duplicate_or_selfsent_status_c, nil)
+
+	/// Filter Homestream for only our own posts so we can update last_status_posted_time
+	//--> filter_only_our_own_public_posts_c	--> next_in_chain_
+	//											\-> update_last_status_posted_time_c
+	next_in_chain_ = frc.taskPickStatusFromChannel(StatusFilterConfig{
+		debugname:                  "controlroom",
+		must_have_one_of_tag_names: nil,
+		check_tagnames:             false,
+		must_be_original:           false,
+		must_be_unmuted:            true,
+		must_not_be_sensitive:      false,
+		check_visibility:           true,
+		must_be_written_by_us:      true,
+		must_not_be_written_by_us:  false,
+		must_be_followed_by_us:     false},
+		update_last_status_posted_time_c, next_in_chain_)
 
 	/// Filter Homestream for things sent from our account but not from controlling channel
 	//--> filter_ownposts_with_private_c		--> next_in_chain_
@@ -251,5 +268,13 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 			}
 		}
 	}()
+
+	//goroutine updating last_status_
+	go func() {
+		for range update_last_status_posted_time_c {
+			updateLastStatusPostedTime()
+		}
+	}()
+
 	return markseen_c
 }

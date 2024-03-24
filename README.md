@@ -100,8 +100,10 @@ help_prefix=!help
 join_welcome_text="Welcome! Warning: Everything you say I will toot and/or tweet to the world if it starts with t>"
 admins_can_redact_user_status=false
 image_timeout_minutes = 60
+#alternateoption:# image_timeout_duration = 60m
 image_timeout_warning = "Hey, more than 1 hour ago you added images that I'm now going to attach to your toot/tweet. Just letting you know. Delete them first if that is not what you want."
-
+poststuffreminder_timeout=10d
+poststuffreminder_msg="Hey, you wanted to be reminded to post something after 10d of inactivity. People are curious!"
 
 [twitter]
 consumer_key=
