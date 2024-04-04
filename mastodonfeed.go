@@ -107,12 +107,12 @@ func (frc *FeedRoomConnector) taskPickStatusFromChannel(config StatusFilterConfi
 			}
 
 			if config.must_be_written_by_us && status.Account.ID != my_account.ID {
-				log.Println("taskPickStatusFromChannel:", config.debugname, status.ID, "failed check: must be written by us BUT IS NOT")
+				// log.Println("taskPickStatusFromChannel:", config.debugname, status.ID, "failed check: must be written by us BUT IS NOT")
 				continue FILTERFOR
 			}
 
 			if config.must_not_be_written_by_us && status.Account.ID == my_account.ID {
-				log.Println("taskPickStatusFromChannel:", config.debugname, status.ID, "failed check: must NOT be written by us BUT IS")
+				// log.Println("taskPickStatusFromChannel:", config.debugname, status.ID, "failed check: must NOT be written by us BUT IS")
 				continue FILTERFOR
 			}
 

@@ -463,13 +463,19 @@ func runMatrixPublishBot() {
 		})
 	}
 
-	///run event loop
+	go func () {
+		for {
+			runMatrixBotTimeRelatedTasks(mxcli)
+			time.Sleep(10 * time.Second)
+		}
+	}()
+
+	///run Sync and restart on demand
 	for {
 		log.Println("syncing..")
-		if err := mxcli.Sync(); err != nil {
+		if err := mxcli.Sync(); err != nil { //blocks until error
 			fmt.Println("Sync() returned ", err)
 		}
-		runMatrixBotTimeRelatedTasks(mxcli)
 		time.Sleep(100 * time.Second)
 	}
 }
