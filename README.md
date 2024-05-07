@@ -62,11 +62,11 @@ wowos(@wowos) mentioned you in public status https://cuties.social/@wowos/202023
 Hi, I liked your posting.
 
 
-( reply2> using https://chaos.social/web/statuses/2020239028409 )
+( public_reply2> using https://chaos.social/web/statuses/2020239028409 )
 ```
 
 ```
-reply2> https://chaos.social/web/statuses/2020239028409 @wowos thanks!
+public_reply2> https://chaos.social/web/statuses/2020239028409 @wowos thanks!
 ```
 
 ## Building
@@ -92,8 +92,8 @@ room_id=!iasdfadsfadsfafs:matrix.org
 guard_prefix=t>
 reblog_prefix=reblog>
 favourite_prefix=+1>
-directtoot_prefix=dm>
-tootreply_prefix=reply2>
+directtoot_prefix=private_dm>
+tootreply_prefix=public_reply2>
 directtweet_prefix=tdm>
 mediadesc_prefix=desc>
 help_prefix=!help

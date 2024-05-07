@@ -55,8 +55,8 @@ func formatLocalReplyUrlHint(status *mastodon.Status) (foreignreplyhint_text, fo
 	}
 	if len(status.URL) > 0 && !hasStringMatchingPrefix(strings.ToLower(status.URL), strings.ToLower(c.GetValueDefault("mastodon", "server", "https://mastodon.social"))) {
 		localurl := getLocalTootUrlFromLocalID(status.ID)
-		foreignreplyhint_text = fmt.Sprintf("\n( %s using %s )", c["matrix"]["tootreply_prefix"], localurl)
-		foreignreplyhint_html = fmt.Sprintf("<br/>( %s using <a href=\"%s\">%s</a> )", c["matrix"]["tootreply_prefix"], localurl, localurl)
+		foreignreplyhint_text = fmt.Sprintf("\n( %s publicy or %s privatly, using %s )", c["matrix"]["tootreply_prefix"], c["matrix"]["directtoot_prefix"], localurl)
+		foreignreplyhint_html = fmt.Sprintf("<br/>( %s publicy or %s privatly, using <a href=\"%s\">%s</a> )", c["matrix"]["tootreply_prefix"], c["matrix"]["directtoot_prefix"], localurl, localurl)
 	}
 	return
 }

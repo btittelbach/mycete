@@ -207,7 +207,7 @@ func runMatrixPublishBot() {
 
 						m := directmsg_re_.FindStringSubmatch(post)
 						if len(m) < 2 {
-							mxNotify(mxcli, "directtweet", ev.Sender, "No can do! A direct message requires a recepient. Please mention an @screenname.")
+							mxNotify(mxcli, "directtweet", ev.Sender, "A direct message requires a recepient. Please mention an @screenname.")
 							return
 						}
 
@@ -257,7 +257,7 @@ func runMatrixPublishBot() {
 						}
 
 						if directmsg_re_.MatchString(post) == false {
-							mxNotify(mxcli, "directtoot", ev.Sender, "No can do! A direct message requires a recepient. Please mention an @username.")
+							mxNotify(mxcli, "directtoot", ev.Sender, "A direct message requires a recepient. Please mention an @username.")
 							return
 						}
 
