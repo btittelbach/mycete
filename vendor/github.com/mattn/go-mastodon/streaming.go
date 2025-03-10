@@ -20,6 +20,13 @@ type UpdateEvent struct {
 
 func (e *UpdateEvent) event() {}
 
+// UpdateEditEvent is a struct for passing status edit event to app.
+type UpdateEditEvent struct {
+	Status *Status `json:"status"`
+}
+
+func (e *UpdateEditEvent) event() {}
+
 // NotificationEvent is a struct for passing notification event to app.
 type NotificationEvent struct {
 	Notification *Notification `json:"notification"`
@@ -33,10 +40,10 @@ type DeleteEvent struct{ ID ID }
 func (e *DeleteEvent) event() {}
 
 // ErrorEvent is a struct for passing errors to app.
-type ErrorEvent struct{ err error }
+type ErrorEvent struct{ Err error }
 
 func (e *ErrorEvent) event()        {}
-func (e *ErrorEvent) Error() string { return e.err.Error() }
+func (e *ErrorEvent) Error() string { return e.Err.Error() }
 
 // Event is an interface passing events to app.
 type Event interface {
@@ -81,6 +88,12 @@ func handleReader(q chan Event, r io.Reader) error {
 				if err == nil {
 					q <- &UpdateEvent{&status}
 				}
+			case "status.update":
+				var status Status
+				err = json.Unmarshal([]byte(token[1]), &status)
+				if err == nil {
+					q <- &UpdateEditEvent{&status}
+				}
 			case "notification":
 				var notification Notification
 				err = json.Unmarshal([]byte(token[1]), &notification)
@@ -105,11 +118,11 @@ func (c *Client) streaming(ctx context.Context, p string, params url.Values) (ch
 	u.Path = path.Join(u.Path, "/api/v1/streaming", p)
 	u.RawQuery = params.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
+	req.URL = u
 
 	if c.Config.AccessToken != "" {
 		req.Header.Set("Authorization", "Bearer "+c.Config.AccessToken)
@@ -123,6 +136,15 @@ func (c *Client) streaming(ctx context.Context, p string, params url.Values) (ch
 			case <-ctx.Done():
 				return
 			default:
+			}
+
+			if i, err := c.GetInstance(ctx); err == nil {
+				if su, ok := i.URLs["streaming_api"]; ok {
+					if u2, err := url.Parse(su); err == nil && u2.Host != "" {
+						u.Host = u2.Host
+						req.Host = u.Host
+					}
+				}
 			}
 
 			c.doStreaming(req, q)

@@ -2,6 +2,7 @@ package mastodon
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -32,6 +33,7 @@ type Account struct {
 	Bot            bool           `json:"bot"`
 	Discoverable   bool           `json:"discoverable"`
 	Source         *AccountSource `json:"source"`
+	FollowedTag    []FollowedTag  `json:"followed_tags"`
 }
 
 // Field is a Mastodon account profile field.
@@ -50,6 +52,40 @@ type AccountSource struct {
 	Fields    *[]Field `json:"fields"`
 }
 
+// UnixTimeString represents a time in a Unix Epoch string
+type UnixTimeString struct {
+	time.Time
+}
+
+func (u *UnixTimeString) UnmarshalJSON(b []byte) error {
+	var timestampSring string
+	err := json.Unmarshal(b, &timestampSring)
+	if err != nil {
+		return err
+	}
+	timestamp, err := strconv.ParseInt(timestampSring, 0, 0)
+	if err != nil {
+		return err
+	}
+	u.Time = time.Unix(timestamp, 0)
+	return nil
+}
+
+// History is the history of a followed tag
+type FollowedTagHistory struct {
+	Day      UnixTimeString `json:"day,omitempty"`
+	Accounts int            `json:"accounts,string,omitempty"`
+	Uses     int            `json:"uses,string,omitempty"`
+}
+
+// FollowedTag is a Hash Tag followed by the user
+type FollowedTag struct {
+	Name      string               `json:"name,omitempty"`
+	URL       string               `json:"url,omitempty"`
+	History   []FollowedTagHistory `json:"history,omitempty"`
+	Following bool                 `json:"following,omitempty"`
+}
+
 // GetAccount return Account.
 func (c *Client) GetAccount(ctx context.Context, id ID) (*Account, error) {
 	var account Account
@@ -64,6 +100,18 @@ func (c *Client) GetAccount(ctx context.Context, id ID) (*Account, error) {
 func (c *Client) GetAccountCurrentUser(ctx context.Context) (*Account, error) {
 	var account Account
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/accounts/verify_credentials", nil, &account, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
+}
+
+// AccountLookup returns the Account of specified acct uri.
+func (c *Client) AccountLookup(ctx context.Context, acct string) (*Account, error) {
+	var account Account
+	params := url.Values{}
+	params.Set("acct", acct)
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/accounts/lookup", params, &account, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -175,6 +223,16 @@ func (c *Client) GetAccountFollowing(ctx context.Context, id ID, pg *Pagination)
 func (c *Client) GetBlocks(ctx context.Context, pg *Pagination) ([]*Account, error) {
 	var accounts []*Account
 	err := c.doAPI(ctx, http.MethodGet, "/api/v1/blocks", nil, &accounts, pg)
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+// GetEndorsements return accounts that the user is currently featuring on their profile.
+func (c *Client) GetEndorsements(ctx context.Context, pg *Pagination) ([]*Account, error) {
+	var accounts []*Account
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/endorsements", nil, &accounts, pg)
 	if err != nil {
 		return nil, err
 	}
@@ -325,4 +383,14 @@ func (c *Client) GetMutes(ctx context.Context, pg *Pagination) ([]*Account, erro
 		return nil, err
 	}
 	return accounts, nil
+}
+
+// GetFollowedTags returns the list of Hashtags followed by the user.
+func (c *Client) GetFollowedTags(ctx context.Context, pg *Pagination) ([]*FollowedTag, error) {
+	var followedTags []*FollowedTag
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/followed_tags", nil, &followedTags, pg)
+	if err != nil {
+		return nil, err
+	}
+	return followedTags, nil
 }
