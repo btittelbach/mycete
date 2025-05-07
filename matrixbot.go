@@ -364,6 +364,7 @@ func runMatrixPublishBot() {
 						}
 					}
 				}
+
 				if urli, inmap := ev.Content["url"]; inmap {
 					if url, ok := urli.(string); ok {
 						go func() {
@@ -379,6 +380,25 @@ func runMatrixPublishBot() {
 							rums_store_chan <- RUMSStoreMsg{key: ev.ID, data: MsgStatusData{MatrixUser: ev.Sender, Action: actionMedia}}
 							// notify user
 							mxNotify(mxcli, "imagesaver", ev.Sender, fmt.Sprintf("image saved. Will tweet/toot with %s's next message", ev.Sender))
+
+							// check for media caption
+							img_filename, inmap_filename := ev.Content["filename"]
+							if img_body, inmap_body := ev.Content["body"]; inmap_body && inmap_filename {
+								// https://spec.matrix.org/v1.14/client-server-api/#media-captions
+								img_body_s, ok1 := img_body.(string)
+								img_filename_s, ok2 := img_filename.(string)
+								if ok1 && ok2 && img_body_s != img_filename_s {
+									// yes, body is a media caption
+									err = saveMediaFileDescription(ev.Sender, ev.ID, strings.TrimSpace(img_body_s))
+									if err != nil {
+										errmsg := fmt.Sprintf("Error saving media caption: %s", err)
+										log.Println(errmsg)
+									} else {
+										mxNotify(mxcli, "imgdesc", ev.Sender, fmt.Sprintf("media caption was saved as image description"))
+									}
+								}
+							}
+
 						}()
 					}
 				}
