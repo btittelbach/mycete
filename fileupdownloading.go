@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,10 +12,9 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"time"
-	"sort"
-	"errors"
 
 	"github.com/btittelbach/cachetable"
 	"github.com/matrix-org/gomatrix"
@@ -120,8 +120,8 @@ func getUserFilelistSortedByMtime(nick, filetype string) (sorted_filepaths []str
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(files, func(i,j int) bool{
-	    return files[i].ModTime().After(files[j].ModTime())
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].ModTime().After(files[j].ModTime())
 	})
 
 	for _, onepath := range files {
@@ -130,7 +130,6 @@ func getUserFilelistSortedByMtime(nick, filetype string) (sorted_filepaths []str
 
 	return sorted_filepaths, nil
 }
-
 
 func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error {
 	if !strings.Contains(matrixurl, "mxc://") {
@@ -159,12 +158,31 @@ func saveMatrixFile(cli *gomatrix.Client, nick, eventid, matrixurl string) error
 	defer fh.Close()
 
 	/// Download image
-	mcxurl := cli.BuildBaseURL("/_matrix/media/r0/download/", matrixmediaurlpart)
-	resp, err := http.Get(mcxurl)
+	mcxurl := cli.BuildBaseURL("/_matrix/client/v1/media/download/", matrixmediaurlpart)
+
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodGet, mcxurl, nil)
 	if err != nil {
 		return err
 	}
+
+	if cli.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+cli.AccessToken)
+	}
+
+	resp, err := cli.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	if resp == nil {
+		return fmt.Errorf("saveMatrixFile: Response is nil")
+	}
+
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("saveMatrixFile: Image Download got HTTP Status Code %d", resp.StatusCode)
+	}
 
 	// Check Filesize (again)
 	if err = checkImageBytesizeLimit(resp.ContentLength); err != nil {
@@ -197,7 +215,7 @@ func saveMediaFileDescription(nick, eventid_of_related_img, description string) 
 	_, imgfilepath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_media_, eventid_of_related_img)
 
 	if _, err := os.Stat(imgfilepath); errors.Is(err, os.ErrNotExist) {
-	  return fmt.Errorf("corresponding media file does not exist")
+		return fmt.Errorf("corresponding media file does not exist")
 	}
 
 	filesdir, descfilepath := hashNickAndTypeAndEventIdToPath(nick, uploadfile_type_desc_, eventid_of_related_img)
@@ -229,7 +247,7 @@ func saveMediaFileDescription(nick, eventid_of_related_img, description string) 
 
 func getDescriptionFilenameOfMediaFilename(imgfilepath string) (string, error) {
 	filename := path.Base(imgfilepath)
-	usermediadir := path.Dir(imgfilepath) //Dir() returns directory without trailing '/'. Important for Split in next statement
+	usermediadir := path.Dir(imgfilepath)          //Dir() returns directory without trailing '/'. Important for Split in next statement
 	userdir, mediatype := path.Split(usermediadir) //split returns ("dir1/dir2/","dir3"). Using multiple Split's to segment a path is a bad idea.
 	if mediatype != uploadfile_type_media_ {
 		return "", fmt.Errorf("unknown imgfilepath given")
@@ -285,8 +303,8 @@ func rmAllUserFiles(nick string) error {
 	return os.RemoveAll(hashNickToUserDir(nick))
 }
 
-/// return hex(sha256()) of string
-/// used so malicous user can't use malicous filename that is defined by nick. (and hash collision or guessing not so big a threat here.)
+// / return hex(sha256()) of string
+// / used so malicous user can't use malicous filename that is defined by nick. (and hash collision or guessing not so big a threat here.)
 func hashNickToUserDir(matrixnick string) string {
 	shasum := make([]byte, sha256.Size)
 	shasum32 := sha256.Sum256([]byte(matrixnick))
