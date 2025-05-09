@@ -168,7 +168,7 @@ func BotCmdBlogToWorld(mclient *mastodon.Client, tclient *anaconda.TwitterApi, r
 	var err error
 
 	if c["server"]["mastodon"] == "true" {
-		reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, false, "")
+		reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, false, "", nil)
 		if markseen_c != nil {
 			markseen_c <- mastodonid
 		}

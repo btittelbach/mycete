@@ -268,7 +268,7 @@ func runMatrixPublishBot() {
 							var reviewurl string
 							var mastodonid mastodon.ID
 
-							reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, private, inreplyto)
+							reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, private, inreplyto, nil)
 							if markseen_c != nil {
 								markseen_c <- mastodonid
 							}
