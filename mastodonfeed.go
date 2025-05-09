@@ -47,6 +47,9 @@ func (frc *FeedRoomConnector) runSplitMastodonEventStream(evChan <-chan mastodon
 				statusOutChan <- event.Status
 			}
 			// log.Println("runSplitMastodonEventStream: new Status", event.Status)
+		case *mastodon.UpdateEditEvent:
+			log.Println("runSplitMastodonEventStream: UpdateEditEvent", event.Status)
+			continue
 		case *mastodon.NotificationEvent:
 			if notificationOutChan != nil {
 				notificationOutChan <- event.Notification
@@ -55,7 +58,7 @@ func (frc *FeedRoomConnector) runSplitMastodonEventStream(evChan <-chan mastodon
 		case *mastodon.DeleteEvent:
 			continue
 		default:
-			log.Println("runSplitMastodonEventStream:", "Unhandled event: %+v", eventi)
+			log.Printf("runSplitMastodonEventStream: Unhandled event: %+v", eventi)
 		}
 	}
 }

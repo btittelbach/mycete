@@ -3,16 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	"os"
-	"log"
 
 	"github.com/btittelbach/anaconda"
-	mastodon "github.com/mattn/go-mastodon"
 	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
+	mastodon "github.com/mattn/go-mastodon"
 )
 
 const character_limit_twitter_ int = 280
@@ -138,8 +138,12 @@ func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, 
 	var mids []mastodon.ID
 	usertoot := &mastodon.Toot{Status: post}
 	if c.GetValueDefault("images", "enabled", "false") == "true" {
-		if mids, err = getImagesForToot(client, matrixnick); err == nil && mids != nil {
-			usertoot.MediaIDs = mids
+		if mids, err = getImagesForToot(client, matrixnick); err == nil {
+			if mids != nil {
+				usertoot.MediaIDs = mids
+			}
+		} else {
+			log.Println("sendToot::getImagesForToot Error:", err)
 		}
 	}
 	if directmsg {
@@ -185,7 +189,7 @@ func getImagesForToot(client *mastodon.Client, matrixnick string) ([]mastodon.ID
 		if imgdescerr != nil {
 			log.Println("readDescriptionOfMediaFile Error:", imgdescerr)
 		}
-		if attachment, err := uploadMediaToMastodonWithDescription(client,context.Background(), imagepath, imagedesc); err != nil {
+		if attachment, err := uploadMediaToMastodonWithDescription(client, context.Background(), imagepath, imagedesc); err != nil {
 			return nil, err
 		} else {
 			mastodon_ids[idx] = attachment.ID
