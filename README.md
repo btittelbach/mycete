@@ -199,12 +199,13 @@ Oauth via console pin. (TODO)
 - [ ] reply to a Tweet/Toot DM/comment via Matrix reply-function
 - [ ] edit a Toot via Matrix edit-message
 - [ ] add command to clear all user-uploaded images. Useful when bot warns about prepared images but they are so far back, you can't find them anymore.
+- [ ] support toot scheduling
 - [ ] have the bot reply to last image still in queue when bot warns about old images still in queue.
-- [ ] support image descriptions for increase reader-accessibility
+- [x] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
   - [x] save image description somewhere for posting step
   - [x] create first user-interface in matrix channel to describe images. (e.g. reply to an img with desc)
-  - [ ] create second user-interface in matrix channel to describe images. (e.g. `st>` after image upload and `st-1>` for last image, etc.)
+  - [x] as second user-interface in matrix channel to describe images, copy media-caption/image-alt-text from matrix
 - [ ] remove Twitter (X) support, as third-party clients are obviously not welcome any more.
 - [ ] look into what would be needed to add BlueSky
 - [ ] move to better config file parser
