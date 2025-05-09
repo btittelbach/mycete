@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/btittelbach/anaconda"
 	twittertextextract "github.com/kylemcc/twitter-text-go/extract"
@@ -134,7 +135,7 @@ func initMastodonClient() *mastodon.Client {
 	})
 }
 
-func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, inreplyto string) (weburl string, statusid mastodon.ID, err error) {
+func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, inreplyto string, scheduledAt *time.Time) (weburl string, statusid mastodon.ID, err error) {
 	var mids []mastodon.ID
 	usertoot := &mastodon.Toot{Status: post}
 	if c.GetValueDefault("images", "enabled", "false") == "true" {
@@ -154,6 +155,9 @@ func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, 
 	}
 	if len(inreplyto) > 0 {
 		usertoot.InReplyToID = mastodon.ID(inreplyto)
+	}
+	if nil != scheduledAt {
+		usertoot.ScheduledAt = scheduledAt
 	}
 	// log.Println("sendToot", usertoot)
 	var mstatus *mastodon.Status
