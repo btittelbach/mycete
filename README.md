@@ -210,3 +210,5 @@ Oauth via console pin. (TODO)
 - [ ] remove Twitter (X) support, as third-party clients are obviously not welcome any more.
 - [ ] look into what would be needed to add BlueSky
 - [ ] move to better config file parser
+- [ ] have better bot command syntax: e.g. `m toot [plf@] [schedulingdate]>` and `m rm>`
+- [ ] make reactions to matrix messages of toots, a favorite
