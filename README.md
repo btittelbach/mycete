@@ -201,6 +201,7 @@ Oauth via console pin. (TODO)
 - [ ] edit a Toot via Matrix edit-message
 - [ ] add command to clear all user-uploaded images. Useful when bot warns about prepared images but they are so far back, you can't find them anymore.
 - [ ] support toot scheduling
+  - [ ] support removal of scheduled toots and removal of already posted, previously scheduled toots
 - [ ] have the bot reply to last image still in queue when bot warns about old images still in queue.
 - [x] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
