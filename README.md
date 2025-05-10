@@ -203,6 +203,7 @@ Oauth via console pin. (TODO)
 - [ ] edit a Toot via Matrix edit-message
 - [ ] add command to clear all user-uploaded images. Useful when bot warns about prepared images but they are so far back, you can't find them anymore.
 - [ ] support toot scheduling
+  - [ ] support removal of scheduled toots and removal of already posted, previously scheduled toots
 - [ ] have the bot reply to last image still in queue when bot warns about old images still in queue.
 - [x] support image descriptions for increase reader-accessibility
   - [x] support setting image descriptions on social media end
@@ -212,3 +213,5 @@ Oauth via console pin. (TODO)
 - [ ] remove Twitter (X) support, as third-party clients are obviously not welcome any more.
 - [ ] look into what would be needed to add BlueSky
 - [ ] move to better config file parser
+- [ ] have better bot command syntax: e.g. `m toot [plf@] [schedulingdate]>` and `m rm>`
+- [ ] make reactions to matrix messages of toots, a favorite
