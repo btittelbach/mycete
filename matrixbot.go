@@ -6,11 +6,11 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 	"sync"
+	"time"
 
-	mastodon "github.com/mattn/go-mastodon"
 	"github.com/matrix-org/gomatrix"
+	mastodon "github.com/mattn/go-mastodon"
 )
 
 const (
@@ -289,6 +289,35 @@ func runMatrixPublishBot() {
 
 						}()
 
+					} else if strings.HasPrefix(post, c["matrix"]["schedule_prefix"]) {
+						/// CMD Schedule Posting
+
+						split_argument := strings.SplitN(post[len(c["matrix"]["schedule_prefix"]):], "|", 2)
+
+						datetime_s := strings.TrimSpace(split_argument[0])
+						post = strings.TrimSpace(split_argument[1])
+
+						// parse date time
+						var datetime time.Time
+						datetime, err = time.ParseInLocation("2006-01-02 15:04 (MST)", datetime_s, time.Local)
+						if err != nil {
+							datetime, err = time.ParseInLocation("2006-01-02 15:04", datetime_s, time.Local)
+						}
+						if err != nil {
+							log.Println(err)
+							mxNotify(mxcli, "datetimeparser", ev.Sender, fmt.Sprintf("Error parsing ISO datetime! %s", err.Error()))
+							return
+						}
+
+						if err = checkCharacterLimit(post); err != nil {
+							log.Println(err)
+							mxNotify(mxcli, "limitcheck", ev.Sender, fmt.Sprintf("Not tweeting/tooting this! %s", err.Error()))
+							return
+						}
+
+						go BotCmdBlogToWorld(mclient, tclient, rums_store_chan, rums_retrieve_chan, mxcli, ev, post, markseen_c, &datetime)
+						updateLastStatusPostedTime()
+
 					} else if strings.HasPrefix(post, c["matrix"]["guard_prefix"]) {
 						/// CMD Posting
 
@@ -300,7 +329,7 @@ func runMatrixPublishBot() {
 							return
 						}
 
-						go BotCmdBlogToWorld(mclient, tclient, rums_store_chan, rums_retrieve_chan, mxcli, ev, post, markseen_c)
+						go BotCmdBlogToWorld(mclient, tclient, rums_store_chan, rums_retrieve_chan, mxcli, ev, post, markseen_c, nil)
 						updateLastStatusPostedTime()
 
 
@@ -338,6 +367,7 @@ func runMatrixPublishBot() {
 						mxNotify(mxcli, "helptext", "", strings.Join([]string{
 							"List of available command prefixes:",
 							c["matrix"]["guard_prefix"] + " This text following the prefix at start of this line would be tweeted and tooted",
+							c["matrix"]["schedule_prefix"] + " <YYYY-MM-DD HH:MM [TMZ]> | This text will be scheduled for tooting",
 							c["matrix"]["directtoot_prefix"] + " [toot url] This text following would be tooted privately @user if at least one @user is contained in this line. Optionally in reply to a [toot url] given at the start.",
 							c["matrix"]["tootreply_prefix"] + " <toot url> This will publicly reply to a given toot. Only works in-instance for now.",
 							c["matrix"]["directtweet_prefix"] + " Buggy and does not work",

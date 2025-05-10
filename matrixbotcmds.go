@@ -1,16 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
-	"bufio"
+	"time"
 
-	mastodon "github.com/mattn/go-mastodon"
-	"github.com/matrix-org/gomatrix"
 	"github.com/btittelbach/anaconda"
+	"github.com/matrix-org/gomatrix"
+	mastodon "github.com/mattn/go-mastodon"
 )
 
 func mxNotify(mxcli *gomatrix.Client, from, to, msg string) {
@@ -158,7 +159,7 @@ func BotCmdFavorite(mclient *mastodon.Client, tclient *anaconda.TwitterApi, rums
 	}
 }
 
-func BotCmdBlogToWorld(mclient *mastodon.Client, tclient *anaconda.TwitterApi, rums_store_chan chan<- RUMSStoreMsg, rums_retrieve_chan chan<- RUMSRetrieveMsg, mxcli *gomatrix.Client, ev *gomatrix.Event, post string, markseen_c chan<- mastodon.ID) {
+func BotCmdBlogToWorld(mclient *mastodon.Client, tclient *anaconda.TwitterApi, rums_store_chan chan<- RUMSStoreMsg, rums_retrieve_chan chan<- RUMSRetrieveMsg, mxcli *gomatrix.Client, ev *gomatrix.Event, post string, markseen_c chan<- mastodon.ID, scheduled_at *time.Time) {
 	lock := getPerUserLock(ev.Sender)
 	lock.Lock()
 	defer lock.Unlock()
@@ -168,7 +169,7 @@ func BotCmdBlogToWorld(mclient *mastodon.Client, tclient *anaconda.TwitterApi, r
 	var err error
 
 	if c["server"]["mastodon"] == "true" {
-		reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, false, "", nil)
+		reviewurl, mastodonid, err = sendToot(mclient, post, ev.Sender, false, "", scheduled_at)
 		if markseen_c != nil {
 			markseen_c <- mastodonid
 		}
