@@ -49,6 +49,7 @@ func hasStringMatchingPrefix(a, b string) bool {
 func configSanityChecksAndDefaults() {
 	must_be_unique_and_present_configvalues := []ConfigValueDescriptor{
 		ConfigValueDescriptor{"matrix", "guard_prefix", "t>"},
+		ConfigValueDescriptor{"matrix", "schedule_prefix", "schedule>"},
 		ConfigValueDescriptor{"matrix", "directtoot_prefix", "private_dm>"},
 		ConfigValueDescriptor{"matrix", "tootreply_prefix", "public_reply2>"},
 		ConfigValueDescriptor{"matrix", "directtweet_prefix", "tdm>"},

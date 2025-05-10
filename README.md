@@ -90,6 +90,7 @@ password=snakesonaplane
 url=https://matrix.org
 room_id=!iasdfadsfadsfafs:matrix.org
 guard_prefix=t>
+schedule_prefix=schedule>
 reblog_prefix=reblog>
 favourite_prefix=+1>
 directtoot_prefix=private_dm>
