@@ -8,7 +8,7 @@ require (
 	github.com/btittelbach/cachetable v0.9.1
 	github.com/gokyle/goconfig v0.0.0-20150908043511-373746557f7f
 	github.com/matrix-org/gomatrix v0.0.0-20220926102614-ceba4d9f7530
-	github.com/mattn/go-mastodon v0.0.10-0.20250117145019-7315f12d2af8
+	github.com/mattn/go-mastodon v0.0.11
 	github.com/microcosm-cc/bluemonday v1.0.27
 	suah.dev/protect v1.2.4
 )
@@ -23,7 +23,7 @@ require (
 	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
-	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
+	github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e // indirect
 	golang.org/x/net v0.40.0 // indirect
 )
 
@@ -34,4 +34,4 @@ require (
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
 )
 
-replace github.com/mattn/go-mastodon v0.0.10-0.20250117145019-7315f12d2af8 => github.com/btittelbach/go-mastodon v0.0.0-20250507221938-5dd6ab5db448
+// replace github.com/mattn/go-mastodon v0.0.10-0.20250117145019-7315f12d2af8 => github.com/btittelbach/go-mastodon v0.0.0-20250507221938-5dd6ab5db448

@@ -40,15 +40,15 @@ github.com/kylemcc/twitter-text-go/extract
 # github.com/matrix-org/gomatrix v0.0.0-20220926102614-ceba4d9f7530
 ## explicit; go 1.12
 github.com/matrix-org/gomatrix
-# github.com/mattn/go-mastodon v0.0.10-0.20250117145019-7315f12d2af8 => github.com/btittelbach/go-mastodon v0.0.0-20250507221938-5dd6ab5db448
+# github.com/mattn/go-mastodon v0.0.11
 ## explicit; go 1.23
 github.com/mattn/go-mastodon
 # github.com/microcosm-cc/bluemonday v1.0.27
 ## explicit; go 1.19
 github.com/microcosm-cc/bluemonday
 github.com/microcosm-cc/bluemonday/css
-# github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-## explicit
+# github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e
+## explicit; go 1.13
 github.com/tomnomnom/linkheader
 # golang.org/x/net v0.40.0
 ## explicit; go 1.23.0

@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/base64"
 	"fmt"
+	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -34,10 +35,73 @@ type PushAlerts struct {
 	Mention   *Sbool `json:"mention"`
 }
 
+// NotificationFilter customizes how a notification query is submitted to
+// the remote Mastodon server.
+// See:
+//
+//	https://docs.joinmastodon.org/methods/notifications/
+type NotificationFilter struct {
+	Includes []string // list of notifications types to include
+	Excludes []string // list of notifications types to exclude
+}
+
+// Notifications iterate over notifications.
+func (c *Client) Notifications(ctx context.Context, filter *NotificationFilter, pg *Pagination) iter.Seq2[*Notification, error] {
+	return c.notificationsFilter(ctx, filter, pg)
+}
+
+func (c *Client) notificationsFilter(ctx context.Context, qry *NotificationFilter, pg *Pagination) iter.Seq2[*Notification, error] {
+	return func(yield func(*Notification, error) bool) {
+		var zero Pagination
+		if pg == nil {
+			pg = &Pagination{}
+		}
+		for {
+			vs, err := c.getNotificationsFilter(ctx, qry, pg)
+			if err != nil {
+				_ = yield(nil, err)
+				return
+			}
+
+			for _, v := range vs {
+				if !yield(v, nil) {
+					return
+				}
+			}
+
+			if *pg == zero {
+				return
+			}
+		}
+	}
+}
+
 // GetNotifications returns notifications.
 func (c *Client) GetNotifications(ctx context.Context, pg *Pagination) ([]*Notification, error) {
+	return c.getNotificationsFilter(ctx, nil, pg)
+}
+
+// GetNotificationsExclude returns notifications with excluded notifications
+func (c *Client) GetNotificationsExclude(ctx context.Context, exclude *[]string, pg *Pagination) ([]*Notification, error) {
+	qry := &NotificationFilter{}
+	if exclude != nil {
+		qry.Excludes = *exclude
+	}
+	return c.getNotificationsFilter(ctx, qry, pg)
+}
+
+func (c *Client) getNotificationsFilter(ctx context.Context, qry *NotificationFilter, pg *Pagination) ([]*Notification, error) {
 	var notifications []*Notification
-	err := c.doAPI(ctx, http.MethodGet, "/api/v1/notifications", nil, &notifications, pg)
+	params := url.Values{}
+	if qry != nil {
+		for _, typ := range qry.Includes {
+			params.Add("types[]", typ)
+		}
+		for _, ex := range qry.Excludes {
+			params.Add("exclude_types[]", ex)
+		}
+	}
+	err := c.doAPI(ctx, http.MethodGet, "/api/v1/notifications", params, &notifications, pg)
 	if err != nil {
 		return nil, err
 	}
