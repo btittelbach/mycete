@@ -231,8 +231,9 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 		must_be_followed_by_us:     false},
 		filter_duplicates_and_selfsent_c, next_in_chain_)
 
-	//subscribe home stream
-	homestream, err := mclient.StreamingUser(context.Background())
+	//subscribe home stream via websocket
+	wsclient := mclient.NewWSClient()
+	homestream, err := wsclient.StreamingWSUser(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -243,7 +244,7 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 	//subscribe tags in addition to home stream
 	for _, tag := range subscribe_tagstreams {
 		log.Println("taskWriteMastodonBackIntoMatrixRooms: subscribing tag", tag)
-		tagstream, err := mclient.StreamingHashtag(context.Background(), tag, false)
+		tagstream, err := wsclient.StreamingWSHashtag(context.Background(), tag, false)
 		if err != nil {
 			panic(err)
 		}
