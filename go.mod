@@ -1,8 +1,6 @@
 module github.com/qbit/mycete
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.25.0
 
 require (
 	github.com/btittelbach/cachetable v0.9.1
@@ -20,17 +18,17 @@ require (
 	github.com/btittelbach/anaconda v2.0.1-0.20200120203223-5807835808f7+incompatible
 	github.com/dustin/go-jsonpointer v0.0.0-20160814072949-ba0abeacc3dc // indirect
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
-	github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17 // indirect
+	github.com/garyburd/go-oauth v0.0.0-20250708150529-9df1f1901ec1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
 	github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 )
 
 require (
 	github.com/ChimeraCoder/anaconda v2.0.0+incompatible // indirect
 	github.com/gorilla/css v1.0.1 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
 )
 

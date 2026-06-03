@@ -22,7 +22,7 @@ github.com/dustin/go-jsonpointer
 # github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad
 ## explicit
 github.com/dustin/gojson
-# github.com/garyburd/go-oauth v0.0.0-20180319155456-bca2e7f09a17
+# github.com/garyburd/go-oauth v0.0.0-20250708150529-9df1f1901ec1
 ## explicit
 github.com/garyburd/go-oauth/oauth
 # github.com/gokyle/goconfig v0.0.0-20150908043511-373746557f7f
@@ -50,13 +50,13 @@ github.com/microcosm-cc/bluemonday/css
 # github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e
 ## explicit; go 1.13
 github.com/tomnomnom/linkheader
-# golang.org/x/net v0.40.0
-## explicit; go 1.23.0
+# golang.org/x/net v0.55.0
+## explicit; go 1.25.0
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
-# golang.org/x/sys v0.33.0
-## explicit; go 1.23.0
+# golang.org/x/sys v0.45.0
+## explicit; go 1.25.0
 golang.org/x/sys/unix
 # gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 ## explicit
