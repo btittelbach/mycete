@@ -232,11 +232,20 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 		filter_duplicates_and_selfsent_c, next_in_chain_)
 
 	//subscribe home stream via websocket
-	wsclient := mclient.NewWSClient()
-	homestream, err := wsclient.StreamingWSUser(context.Background())
-	if err != nil {
-		panic(err)
+	wsmclient := mclient.NewWSClient()
+	use_sse_instead_of_ws := false
+	homestream, err := wsmclient.StreamingWSUser(context.Background())
+	if nil != err {
+		log.Println("taskWriteMastodonBackIntoMatrixRooms: WS streaming failed. Fallback to old streaming")
+		// try non-WS streaming
+		homestream, err = mclient.StreamingUser(context.Background())
+		if nil == err {
+			use_sse_instead_of_ws = true
+		} else {
+			panic(err)
+		}
 	}
+
 	//--> homestream		--> filter_ownposts_c
 	//						\-> notification2myroom_c
 	go frc.runSplitMastodonEventStream(homestream, filter_ownposts_with_private_c, notification2myroom_c)
@@ -244,7 +253,12 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 	//subscribe tags in addition to home stream
 	for _, tag := range subscribe_tagstreams {
 		log.Println("taskWriteMastodonBackIntoMatrixRooms: subscribing tag", tag)
-		tagstream, err := wsclient.StreamingWSHashtag(context.Background(), tag, false)
+		var tagstream chan mastodon.Event
+		if use_sse_instead_of_ws {
+			tagstream, err = mclient.StreamingHashtag(context.Background(), tag, false)
+		} else {
+			tagstream, err = wsmclient.StreamingWSHashtag(context.Background(), tag, false)
+		}
 		if err != nil {
 			panic(err)
 		}
