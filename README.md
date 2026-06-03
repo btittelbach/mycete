@@ -142,6 +142,7 @@ filter_reblogs=false
 filter_myposts=true
 filter_otherpeoplesposts=false
 filter_unfollowed=false
+filter_replies=false
 
 [feed2morerooms_filter2]
 target_room=!example2:matrix.org
@@ -152,6 +153,7 @@ filter_reblogs=true
 filter_myposts=false
 filter_otherpeoplesposts=false
 filter_unfollowed=true
+filter_replies=false
 
 
 ```

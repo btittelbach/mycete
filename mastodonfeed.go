@@ -29,6 +29,7 @@ type StatusFilterConfig struct {
 	must_be_original           bool
 	must_be_followed_by_us     bool
 	must_not_be_sensitive      bool
+	must_not_be_reply		   bool
 }
 
 func (frc *FeedRoomConnector) runSplitMastodonEventStream(evChan <-chan mastodon.Event, statusOutChan chan<- *mastodon.Status, notificationOutChan chan<- *mastodon.Notification) {
@@ -116,6 +117,10 @@ func (frc *FeedRoomConnector) taskPickStatusFromChannel(config StatusFilterConfi
 
 			if config.must_not_be_written_by_us && status.Account.ID == my_account.ID {
 				// log.Println("taskPickStatusFromChannel:", config.debugname, status.ID, "failed check: must NOT be written by us BUT IS")
+				continue FILTERFOR
+			}
+
+			if config.must_not_be_reply && status.InReplyToID != nil {
 				continue FILTERFOR
 			}
 
