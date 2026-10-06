@@ -3,6 +3,7 @@ package mastodon
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -66,7 +67,11 @@ func (c *WSClient) streamingWS(ctx context.Context, stream, tag string) (chan Ev
 	params.Set("access_token", c.client.Config.AccessToken)
 	params.Set("stream", stream)
 	if tag != "" {
-		params.Set("tag", tag)
+		if stream == "list" {
+			params.Set("list", tag)
+		} else {
+			params.Set("tag", tag)
+		}
 	}
 
 	u, err := changeWebSocketScheme(c.client.Config.Server)
@@ -99,10 +104,17 @@ func (c *WSClient) handleWS(ctx context.Context, rawurl string, q chan Event) er
 		return err
 	}
 
+	defer conn.Close()
+
 	// Close the WebSocket when the context is canceled.
+	done := make(chan struct{})
+	defer close(done)
 	go func() {
-		<-ctx.Done()
-		conn.Close()
+		select {
+		case <-ctx.Done():
+			conn.Close()
+		case <-done:
+		}
 	}()
 
 	for {
@@ -166,7 +178,7 @@ func (c *WSClient) handleWS(ctx context.Context, rawurl string, q chan Event) er
 }
 
 func (c *WSClient) dialRedirect(rawurl string) (conn *websocket.Conn, err error) {
-	for {
+	for i := 0; i < 10; i++ {
 		conn, rawurl, err = c.dial(rawurl)
 		if err != nil {
 			return nil, err
@@ -174,6 +186,7 @@ func (c *WSClient) dialRedirect(rawurl string) (conn *websocket.Conn, err error)
 			return conn, nil
 		}
 	}
+	return nil, errors.New("too many redirects")
 }
 
 func (c *WSClient) dial(rawurl string) (*websocket.Conn, string, error) {

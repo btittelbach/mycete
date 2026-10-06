@@ -187,9 +187,9 @@ Oauth via console pin. (TODO)
 - [X] Read the timelines back into the matrix room.
 - [X] favorite and reblog Mastodon status
 - [X] un-reblog and un-favourite when redacting matrix message
-- [ ] Fix bug: public_reply2> asks for username when it does not need one
-- [ ] tests
-- [ ] Error early if our service is enabled and we have invalid credentials. (See if there is API for testing?)
+- [X] Fix bug: public_reply2> asks for username when it does not need one
+- [X] tests
+- [X] Error early if our service is enabled and we have invalid credentials. (See if there is API for testing?)
 - [X] post images
 - [X] support uploading multiple images per Toot/Tweet
 - [X] more feedback and user error guards

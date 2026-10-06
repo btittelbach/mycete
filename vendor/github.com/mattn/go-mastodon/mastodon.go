@@ -43,7 +43,9 @@ func (c *Client) doAPI(ctx context.Context, method string, uri string, params in
 	if err != nil {
 		return err
 	}
-	u.Path = path.Join(u.Path, uri)
+	// uri may contain percent-encoded path segments (e.g. hashtags); JoinPath
+	// keeps them intact instead of escaping the percent signs again.
+	u = u.JoinPath(uri)
 
 	var req *http.Request
 	ct := "application/x-www-form-urlencoded"
@@ -113,6 +115,14 @@ func (c *Client) doAPI(ctx context.Context, method string, uri string, params in
 				return ctx.Err()
 			}
 
+			// the request body was consumed by the previous attempt.
+			if req.GetBody != nil {
+				req.Body, err = req.GetBody()
+				if err != nil {
+					return err
+				}
+			}
+
 			backoff = time.Duration(1.5 * float64(backoff))
 			continue
 		}
@@ -165,6 +175,7 @@ func (c *Client) Authenticate(ctx context.Context, username, password string) er
 		"username":      {username},
 		"password":      {password},
 		"scope":         {"read write follow"},
+		"redirect_uri":  {"urn:ietf:wg:oauth:2.0:oob"},
 	}
 
 	return c.authenticate(ctx, params)
@@ -300,6 +311,21 @@ func (c *Client) getAccessToken(ctx context.Context, params url.Values) error {
 
 	c.Config.AccessToken = res.AccessToken
 
+	return nil
+}
+
+// RevokeToken revokes the access token of the client and clears it from the
+// config on success.
+func (c *Client) RevokeToken(ctx context.Context) error {
+	params := url.Values{
+		"client_id":     {c.Config.ClientID},
+		"client_secret": {c.Config.ClientSecret},
+		"token":         {c.Config.AccessToken},
+	}
+	if err := c.doAPI(ctx, http.MethodPost, "/oauth/revoke", params, nil, nil); err != nil {
+		return err
+	}
+	c.Config.AccessToken = ""
 	return nil
 }
 

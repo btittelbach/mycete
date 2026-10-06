@@ -1,12 +1,12 @@
 module github.com/qbit/mycete
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/btittelbach/cachetable v0.9.1
 	github.com/gokyle/goconfig v0.0.0-20150908043511-373746557f7f
 	github.com/matrix-org/gomatrix v0.0.0-20220926102614-ceba4d9f7530
-	github.com/mattn/go-mastodon v0.0.11
+	github.com/mattn/go-mastodon v0.0.13
 	github.com/microcosm-cc/bluemonday v1.0.27
 	suah.dev/protect v1.2.4
 )
@@ -22,13 +22,13 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
 	github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.59.0 // indirect
 )
 
 require (
 	github.com/ChimeraCoder/anaconda v2.0.0+incompatible // indirect
 	github.com/gorilla/css v1.0.1 // indirect
-	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
 )
 

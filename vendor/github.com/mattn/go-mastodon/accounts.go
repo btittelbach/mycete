@@ -24,6 +24,7 @@ type Account struct {
 	StatusesCount  int64          `json:"statuses_count"`
 	Note           string         `json:"note"`
 	URL            string         `json:"url"`
+	URI            string         `json:"uri"`
 	Avatar         string         `json:"avatar"`
 	AvatarStatic   string         `json:"avatar_static"`
 	Header         string         `json:"header"`
@@ -70,6 +71,10 @@ func (u *UnixTimeString) UnmarshalJSON(b []byte) error {
 	}
 	u.Time = time.Unix(timestamp, 0)
 	return nil
+}
+
+func (u UnixTimeString) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strconv.FormatInt(u.Unix(), 10))
 }
 
 // History is the history of a followed tag
@@ -209,6 +214,16 @@ func (c *Client) AccountStatuses(ctx context.Context, id ID, pg *Pagination) ite
 func (c *Client) GetAccountStatuses(ctx context.Context, id ID, pg *Pagination) ([]*Status, error) {
 	var statuses []*Status
 	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/statuses", url.PathEscape(string(id))), nil, &statuses, pg)
+	if err != nil {
+		return nil, err
+	}
+	return statuses, nil
+}
+
+// GetAccountStatusesParams return statuses by specified account.
+func (c *Client) GetAccountStatusesParams(ctx context.Context, id ID, params url.Values, pg *Pagination) ([]*Status, error) {
+	var statuses []*Status
+	err := c.doAPI(ctx, http.MethodGet, fmt.Sprintf("/api/v1/accounts/%s/statuses", url.PathEscape(string(id))), params, &statuses, pg)
 	if err != nil {
 		return nil, err
 	}
