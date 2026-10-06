@@ -100,7 +100,7 @@ func taskFilterMastodonStreamForRoom(frc *FeedRoomConnector, configname string, 
 	filter_otherpeoplesposts := c.GetValueDefault(configname, "filter_otherpeoplesposts", "true") == "true"
 	filter_myposts := c.GetValueDefault(configname, "filter_myposts", "true") == "true"
 	filter_visibility := strings.Split(c.GetValueDefault(configname, "filter_visibility", ""), " ")
-	filter_replies :=  c.GetValueDefault(configname, "filter_replies", "false") == "true"
+	filter_replies := c.GetValueDefault(configname, "filter_replies", "false") == "true"
 	if len(filter_visibility) == 1 && len(filter_visibility[0]) == 0 {
 		filter_visibility = nil
 	}
@@ -124,7 +124,7 @@ func taskFilterMastodonStreamForRoom(frc *FeedRoomConnector, configname string, 
 		must_be_written_by_us:      filter_otherpeoplesposts,
 		must_not_be_written_by_us:  filter_myposts,
 		must_be_followed_by_us:     filter_unfollowed,
-		must_not_be_reply:			filter_replies},
+		must_not_be_reply:          filter_replies},
 		targetroomduplicatefilter, statusOut)
 }
 
@@ -215,7 +215,7 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 		must_be_written_by_us:      true,
 		must_not_be_written_by_us:  false,
 		must_be_followed_by_us:     false,
-		must_not_be_reply:			false},
+		must_not_be_reply:          false},
 		update_last_status_posted_time_c, next_in_chain_)
 
 	/// Filter Homestream for things sent from our account but not from controlling channel
@@ -232,7 +232,7 @@ func taskWriteMastodonBackIntoMatrixRooms(mclient *mastodon.Client, mxcli *gomat
 		must_be_written_by_us:      !show_complete_home_stream,
 		must_not_be_written_by_us:  false,
 		must_be_followed_by_us:     false,
-		must_not_be_reply:			false},
+		must_not_be_reply:          false},
 		filter_duplicates_and_selfsent_c, next_in_chain_)
 
 	//subscribe home stream via websocket
