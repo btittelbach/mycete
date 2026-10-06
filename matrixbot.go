@@ -221,7 +221,7 @@ func runMatrixPublishBot() {
 						}()
 
 					} else if strings.HasPrefix(post, c["matrix"]["directtoot_prefix"]) || strings.HasPrefix(post, c["matrix"]["tootreply_prefix"]) {
-						/// CMD Mastodon Direct Toot
+						/// CMD Mastodon Direct Toot or Public Reply
 
 						log.Println("direct toot or reply")
 
@@ -256,7 +256,8 @@ func runMatrixPublishBot() {
 							return
 						}
 
-						if directmsg_re_.MatchString(post) == false {
+						// Only direct messages require a recipient mention, not public replies
+						if private && directmsg_re_.MatchString(post) == false {
 							mxNotify(mxcli, "directtoot", ev.Sender, "A direct message requires a recepient. Please mention an @username.")
 							return
 						}
