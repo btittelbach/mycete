@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -84,36 +82,6 @@ func configSanityChecksAndDefaults() {
 	}
 }
 
-func validateServiceCredentials() {
-	// Validate Mastodon credentials if Mastodon is enabled
-	if c["server"]["mastodon"] == "true" {
-		if !c.SectionInConfig("mastodon") {
-			panic("ERROR: [mastodon] section is required when mastodon=true in [server]")
-		}
-		
-		mastodonSection := c["mastodon"]
-		requiredMastodonKeys := []string{"server", "access_token"}
-		for _, key := range requiredMastodonKeys {
-			if len(strings.TrimSpace(mastodonSection[key])) == 0 {
-				panic(fmt.Sprintf("ERROR: [mastodon]%s is required when mastodon=true in [server]", key))
-			}
-		}
-		
-		// Try to create Mastodon client and verify credentials
-		mclient := initMastodonClient()
-		if mclient == nil {
-			panic("ERROR: Failed to initialize Mastodon client with provided credentials")
-		}
-		
-		// Try to verify Mastodon credentials by getting account info
-		ctx := context.Background()
-		_, err := mclient.GetAccountCurrentUser(ctx)
-		if err != nil {
-			panic(fmt.Sprintf("ERROR: Failed to verify Mastodon credentials: %v", err))
-		}
-		log.Println("Mastodon credentials validated successfully")
-	}
-}
 
 func mainWithDefers() {
 	var err error
@@ -128,10 +96,6 @@ func mainWithDefers() {
 		}
 		defer os.RemoveAll(temp_image_files_dir_)
 	}
-
-	///////////////////////////////////////////////////////////
-	//// Validate service credentials early
-	validateServiceCredentials()
 
 	///////////////////////////////////////////////////////////
 	//// Start Bot and all Sub-Go-Routines

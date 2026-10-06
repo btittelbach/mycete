@@ -126,12 +126,26 @@ func getImagesForTweet(client *anaconda.TwitterApi, nick string) ([]string, erro
 /////////////
 
 func initMastodonClient() *mastodon.Client {
-	return mastodon.NewClient(&mastodon.Config{
+	mclient := mastodon.NewClient(&mastodon.Config{
 		Server:       c["mastodon"]["server"],
 		ClientID:     c["mastodon"]["client_id"],
 		ClientSecret: c["mastodon"]["client_secret"],
 		AccessToken:  c["mastodon"]["access_token"],
 	})
+
+	// verify credentials
+	if mclient == nil {
+		panic("ERROR: Failed to initialize Mastodon client with provided credentials")
+	}
+
+	// Try to verify Mastodon credentials by getting account info
+	ctx := context.Background()
+	_, err := mclient.GetAccountCurrentUser(ctx)
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: Failed to verify Mastodon credentials: %v", err))
+	}
+
+	return mclient
 }
 
 func sendToot(client *mastodon.Client, post, matrixnick string, directmsg bool, inreplyto string) (weburl string, statusid mastodon.ID, err error) {
